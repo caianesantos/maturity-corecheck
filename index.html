@@ -1,259 +1,124 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Avaliação de Maturidade de TI</title>
+    <title>Maturity Corecheck - Enterprise Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         .view { display: none; }
         .view.active { display: block; }
-        .option-card { transition: all 0.2s; }
-        .option-card.selected { border-color: #2563eb; background-color: #dbeafe; box-shadow: 0 0 0 2px #bfdbfe; }
+        .option-card.selected { border-color: #2563eb; background-color: #eff6ff; box-shadow: 0 0 0 2px #bfdbfe; }
+        @media print {
+            .print-hidden { display: none !important; }
+            .print-break-inside-avoid { break-inside: avoid; }
+            body { background: white; }
+        }
     </style>
 </head>
 <body class="text-gray-800 antialiased h-screen flex flex-col overflow-hidden">
 
     <!-- NAVBAR -->
-    <nav id="main-nav" class="bg-slate-900 text-white shadow-md hidden flex-shrink-0">
+    <nav id="main-nav" class="bg-slate-900 text-white shadow-md hidden flex-shrink-0 print-hidden">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center">
-                    <span class="font-bold text-xl tracking-tight">Maturidade TI</span>
-                    <div class="ml-10 flex items-baseline space-x-4" id="nav-links">
+                    <span class="font-bold text-xl text-blue-400">Maturity <span class="text-white">Corecheck</span></span>
+                    <div class="ml-10 flex space-x-4">
                         <a href="#" onclick="navigate('dashboard')" class="hover:bg-slate-700 px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
-                        <a href="#" onclick="navigate('companies')" class="hover:bg-slate-700 px-3 py-2 rounded-md text-sm font-medium">Empresas</a>
-                        <a href="#" onclick="navigate('evaluations')" class="hover:bg-slate-700 px-3 py-2 rounded-md text-sm font-medium">Avaliações</a>
-                        <a href="#" onclick="navigate('questions')" id="nav-questions" class="hover:bg-slate-700 px-3 py-2 rounded-md text-sm font-medium hidden">Questões (Admin)</a>
+                        <a href="#" onclick="navigate('evaluations')" class="hover:bg-slate-700 px-3 py-2 rounded-md text-sm font-medium">Auditorias</a>
                     </div>
                 </div>
-                <div class="flex items-center">
-                    <span id="current-user-display" class="text-sm text-slate-300 mr-4"></span>
-                    <button onclick="logout()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md text-sm font-medium transition">Sair</button>
-                </div>
+                <button onclick="logout()" class="text-gray-300 hover:text-white text-sm">Sair</button>
             </div>
         </div>
     </nav>
 
-    <!-- MAIN CONTENT AREA -->
     <main class="flex-1 overflow-y-auto p-4 sm:p-8">
-        <div class="max-w-5xl mx-auto w-full">
+        <div class="max-w-5xl mx-auto">
 
-            <!-- VIEW: LOGIN -->
-            <div id="view-login" class="view active max-w-md mx-auto mt-20 bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+            <!-- VISTA: LOGIN -->
+            <div id="view-login" class="view active max-w-md mx-auto mt-20 bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
                 <div class="text-center mb-8">
-                    <h1 class="text-3xl font-bold text-slate-900">Maturidade TI</h1>
-                    <p class="text-gray-500 mt-2">Faça login para acessar o sistema</p>
+                    <h1 class="text-3xl font-bold text-slate-900">Login <span class="text-blue-600">Corecheck</span></h1>
+                    <p class="text-gray-500 mt-2">Acesse a Governança de TI</p>
                 </div>
                 <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Usuário</label>
-                        <input type="text" id="login-user" class="w-full border-gray-300 rounded-lg p-3 border focus:ring-blue-500 focus:border-blue-500" placeholder="admin">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
-                        <input type="password" id="login-pass" class="w-full border-gray-300 rounded-lg p-3 border focus:ring-blue-500 focus:border-blue-500" placeholder="123">
-                    </div>
-                    <button onclick="login()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition mt-4">Entrar</button>
-                    <p class="text-xs text-center text-gray-400 mt-4">Acesso padrão: admin / 123 (Administrador) <br> avaliador / 123 (Avaliador)</p>
+                    <input type="text" id="login-user" class="w-full border rounded-lg p-3" placeholder="Usuário (admin)">
+                    <input type="password" id="login-pass" class="w-full border rounded-lg p-3" placeholder="Senha (123)">
+                    <button onclick="login()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition">Entrar</button>
                 </div>
             </div>
 
-            <!-- VIEW: DASHBOARD -->
+            <!-- VISTA: DASHBOARD -->
             <div id="view-dashboard" class="view">
-                <h2 class="text-2xl font-bold text-slate-800 mb-6">Visão Geral</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <div class="text-gray-500 text-sm font-semibold uppercase">Empresas Cadastradas</div>
-                        <div class="text-4xl font-bold text-blue-600 mt-2" id="dash-companies-count">0</div>
+                <h2 class="text-2xl font-bold mb-6">Painel de Controle</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
+                        <div class="text-sm font-bold text-gray-500">OBJETIVO ATUAL</div>
+                        <div class="text-xl font-bold mt-1">Estabilização Grupo Horizonte S.A. (Rumo ao IPO 2027)</div>
                     </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <div class="text-gray-500 text-sm font-semibold uppercase">Avaliações Concluídas</div>
-                        <div class="text-4xl font-bold text-emerald-600 mt-2" id="dash-evaluations-count">0</div>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <div class="text-gray-500 text-sm font-semibold uppercase">Questões no Banco</div>
-                        <div class="text-4xl font-bold text-slate-700 mt-2" id="dash-questions-count">0</div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-emerald-500">
+                        <div class="text-sm font-bold text-gray-500">STATUS DA GOVERNANÇA</div>
+                        <div id="dash-status" class="text-xl font-bold mt-1">Aguardando Auditoria</div>
                     </div>
                 </div>
-                
-                <h3 class="text-lg font-bold mb-4 border-b pb-2">Ações Rápidas</h3>
-                <div class="flex gap-4">
-                    <button onclick="navigate('companies')" class="bg-blue-100 text-blue-700 hover:bg-blue-200 px-6 py-3 rounded-lg font-medium transition">Nova Empresa</button>
-                    <button onclick="navigate('evaluations')" class="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 px-6 py-3 rounded-lg font-medium transition">Nova Avaliação</button>
-                </div>
+                <button onclick="openScopeModal()" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-bold shadow-lg hover:bg-blue-700 transition">Iniciar Novo PDTI / Auditoria</button>
             </div>
 
-            <!-- VIEW: EMPRESAS -->
-            <div id="view-companies" class="view">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-slate-800">Empresas Clientes</h2>
-                    <button onclick="document.getElementById('form-company').classList.toggle('hidden')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">+ Cadastrar Empresa</button>
-                </div>
-
-                <!-- Form Cadastro de Empresa -->
-                <div id="form-company" class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6 hidden">
-                    <h3 class="text-lg font-bold mb-4">Nova Empresa</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nome Fantasia / Razão Social</label>
-                            <input type="text" id="comp-name" class="w-full border rounded p-2 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Setor / Indústria</label>
-                            <input type="text" id="comp-industry" class="w-full border rounded p-2 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">CNPJ (Opcional)</label>
-                            <input type="text" id="comp-cnpj" class="w-full border rounded p-2 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Contato Responsável</label>
-                            <input type="text" id="comp-contact" class="w-full border rounded p-2 text-sm">
-                        </div>
+            <!-- MODAL DE ESCOPO (TRAVA DE SEGURANÇA SOLICITADA PELO PROFESSOR) -->
+            <div id="modal-scope" class="fixed inset-0 bg-slate-900/60 hidden flex items-center justify-center z-50">
+                <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-lg w-full">
+                    <h3 class="text-2xl font-bold mb-2">Definição de Escopo</h3>
+                    <p class="text-gray-500 mb-6 italic">"Atenção: Valide o objeto analisado antes de prosseguir."</p>
+                    
+                    <div class="space-y-4 mb-8">
+                        <label class="block p-4 border-2 rounded-xl cursor-pointer hover:border-blue-400 transition" id="label-scope-case">
+                            <input type="radio" name="scope-type" value="case" class="mr-2" checked>
+                            <span class="font-bold text-slate-800">PDTI do Caso (Grupo Horizonte S.A.)</span>
+                            <p class="text-xs text-gray-500 ml-6">Foco: HorizonLog, IPO 2027, Mariana, Dr. Alberto, LGPD Motoristas.</p>
+                        </label>
+                        <label class="block p-4 border-2 rounded-xl cursor-pointer hover:border-blue-400 transition" id="label-scope-app">
+                            <input type="radio" name="scope-type" value="app" class="mr-2">
+                            <span class="font-bold text-slate-800">PDTI do Aplicativo (Evolução Maturity Corecheck)</span>
+                            <p class="text-xs text-gray-500 ml-6">Foco: Banco de dados, UX, Backend, CI/CD, Débito Técnico.</p>
+                        </label>
                     </div>
-                    <button onclick="saveCompany()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded font-medium text-sm transition">Salvar Empresa</button>
-                    <button onclick="document.getElementById('form-company').classList.add('hidden')" class="text-gray-500 ml-2 hover:underline text-sm">Cancelar</button>
-                </div>
 
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Setor</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contato</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="companies-list" class="bg-white divide-y divide-gray-200">
-                            <!-- Preenchido via JS -->
-                        </ul>
-                    </table>
-                </div>
-            </div>
-
-            <!-- VIEW: QUESTÕES (ADMIN) -->
-            <div id="view-questions" class="view">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-slate-800">Banco de Questões</h2>
-                    <button onclick="alert('Funcionalidade de adicionar nova questão completa em desenvolvimento. No momento o banco possui 25 questões base.');" class="bg-slate-800 text-white px-4 py-2 rounded-lg font-medium transition">+ Nova Questão</button>
-                </div>
-                <div class="bg-blue-50 border border-blue-100 text-blue-800 p-4 rounded-lg text-sm mb-6">
-                    Como <strong>Administrador</strong>, você visualiza as questões que compõem o formulário. O banco atual contém as 25 questões técnicas base.
-                </div>
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 max-h-[600px] overflow-y-auto" id="questions-list">
-                    <!-- Preenchido via JS -->
-                </div>
-            </div>
-
-            <!-- VIEW: AVALIAÇÕES (LISTAGEM) -->
-            <div id="view-evaluations" class="view">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-slate-800">Gestão de Avaliações</h2>
-                    <button onclick="document.getElementById('modal-new-eval').classList.remove('hidden')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition">Iniciar Nova Avaliação</button>
-                </div>
-
-                <div class="grid grid-cols-1 gap-4" id="evaluations-list">
-                    <!-- Preenchido via JS -->
-                </div>
-
-                <!-- Modal Iniciar Avaliação -->
-                <div id="modal-new-eval" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-                    <div class="bg-white p-6 rounded-xl shadow-xl max-w-md w-full">
-                        <h3 class="text-xl font-bold mb-4">Nova Avaliação</h3>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Selecione a Empresa Cliente</label>
-                        <select id="eval-company-select" class="w-full border border-gray-300 rounded-lg p-2 mb-6">
-                            <!-- Preenchido via JS -->
-                        </select>
-                        <div class="flex justify-end space-x-3">
-                            <button onclick="document.getElementById('modal-new-eval').classList.add('hidden')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
-                            <button onclick="startEvaluation()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Iniciar Questionário</button>
-                        </div>
+                    <div class="flex justify-end space-x-3">
+                        <button onclick="document.getElementById('modal-scope').classList.add('hidden')" class="px-4 py-2 text-gray-500">Cancelar</button>
+                        <button onclick="startEvaluation()" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold">Confirmar e Iniciar</button>
                     </div>
                 </div>
             </div>
 
-            <!-- VIEW: QUIZ (O PROCESSO DE AVALIAÇÃO) -->
+            <!-- VISTA: QUIZ (SIMPLIFICADO PARA O CASE) -->
             <div id="view-quiz" class="view">
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-10 relative">
-                    <!-- Header do Quiz -->
-                    <div class="flex justify-between items-center mb-6 border-b pb-4">
-                        <div>
-                            <h2 class="text-xl font-bold text-slate-800" id="quiz-company-name">Avaliando: Empresa</h2>
-                            <p class="text-sm text-gray-500">Avaliador: <span id="quiz-evaluator-name"></span></p>
-                        </div>
-                        <button onclick="navigate('evaluations')" class="text-gray-400 hover:text-red-500 text-sm underline">Salvar e Sair</button>
-                    </div>
-
-                    <!-- Barra de Progresso -->
+                <div class="bg-white rounded-2xl shadow-lg p-8 border border-gray-200">
                     <div class="mb-6">
-                        <div class="flex justify-between text-xs font-semibold text-gray-500 mb-1">
-                            <span id="quiz-progress-text">Pergunta 1 de X</span>
-                            <span id="quiz-progress-percent">0%</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div id="quiz-progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
-                        </div>
+                        <div id="quiz-scope-badge" class="inline-block bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded font-bold mb-2">MODO: CLIENTE</div>
+                        <h2 id="quiz-question" class="text-2xl font-bold text-slate-800">Pergunta...?</h2>
                     </div>
-
-                    <!-- Categoria e Pergunta -->
-                    <div class="mb-6">
-                        <span id="quiz-category" class="inline-block bg-slate-100 text-slate-800 text-xs px-3 py-1 rounded-full font-semibold mb-3 tracking-wide uppercase border border-slate-200">Categoria</span>
-                        <h3 id="quiz-question" class="text-lg sm:text-xl font-semibold text-gray-800 leading-snug">Texto da pergunta vai aqui?</h3>
-                    </div>
-
-                    <!-- Opções -->
-                    <div id="quiz-options" class="space-y-3 mb-6"></div>
-
-                    <!-- Área de Texto Condicional -->
-                    <div id="quiz-extra-container" class="hidden mb-8 p-4 rounded-lg border">
-                        <label id="quiz-extra-label" class="block text-sm font-bold mb-2"></label>
-                        <textarea id="quiz-extra-input" rows="3" class="w-full border-gray-300 rounded-md p-3 text-sm border outline-none resize-none" placeholder="Digite aqui..."></textarea>
-                    </div>
-
-                    <!-- Controles -->
-                    <div class="flex justify-between items-center border-t border-gray-100 pt-6">
-                        <button id="quiz-btn-prev" onclick="quizPrev()" class="text-gray-500 hover:text-blue-600 font-medium px-4 py-2 transition disabled:opacity-30 disabled:cursor-not-allowed">&larr; Voltar</button>
-                        <button id="quiz-btn-next" onclick="quizNext()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed">Avançar &rarr;</button>
+                    <div id="quiz-options" class="space-y-3 mb-8"></div>
+                    <textarea id="quiz-obs" class="w-full border rounded-lg p-3 mb-6" placeholder="Observações técnicas/evidências..."></textarea>
+                    <div class="flex justify-between">
+                        <button id="btn-prev" onclick="quizPrev()" class="text-gray-500">Anterior</button>
+                        <button id="btn-next" onclick="quizNext()" class="bg-blue-600 text-white px-8 py-2 rounded-lg font-bold">Próximo</button>
                     </div>
                 </div>
             </div>
 
-            <!-- VIEW: RELATÓRIO FINAL -->
+            <!-- VISTA: RELATÓRIO PDTI -->
             <div id="view-report" class="view">
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-10">
-                    <div class="flex justify-between items-start mb-8">
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-800">Relatório de Maturidade</h2>
-                            <p class="text-gray-500" id="report-company-info">Empresa: --- | Avaliador: --- | Data: ---</p>
-                        </div>
-                        <button onclick="navigate('evaluations')" class="bg-slate-100 hover:bg-slate-200 text-slate-800 px-4 py-2 rounded-lg font-medium transition text-sm">&larr; Voltar</button>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <div class="md:col-span-1 bg-gray-50 rounded-xl p-6 border border-gray-200 text-center flex flex-col justify-center">
-                            <div class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Score Geral</div>
-                            <div class="flex items-baseline justify-center space-x-1 mb-2">
-                                <div class="text-6xl font-extrabold text-slate-800" id="report-score">0.0</div>
-                                <div class="text-xl text-gray-400 font-medium">/ 4.0</div>
-                            </div>
-                            <div id="report-badge" class="inline-block px-4 py-2 rounded-lg font-bold text-sm mb-3 mt-2 border">Nível: ---</div>
-                            <p id="report-desc" class="text-gray-600 text-xs leading-relaxed">---</p>
-                        </div>
-                        <div class="md:col-span-2 bg-white rounded-xl p-6 border border-gray-200">
-                            <h3 class="text-base font-semibold text-gray-800 mb-4 border-b pb-2">Desempenho por Domínio</h3>
-                            <div id="report-categories" class="space-y-4"></div>
-                        </div>
-                    </div>
-
-                    <!-- Detalhes das Respostas -->
-                    <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Detalhamento da Avaliação</h3>
-                    <div id="report-details" class="space-y-4 max-h-96 overflow-y-auto pr-2">
-                        <!-- Preenchido via JS -->
-                    </div>
+                <div class="flex justify-between items-center mb-6 print-hidden">
+                    <button onclick="navigate('dashboard')" class="text-blue-600">← Voltar</button>
+                    <button onclick="window.print()" class="bg-slate-800 text-white px-4 py-2 rounded">Exportar PDF</button>
+                </div>
+                <div class="bg-white p-10 rounded-xl shadow-lg border border-gray-200" id="report-content">
+                    <!-- Gerado via JS -->
                 </div>
             </div>
 
@@ -261,596 +126,101 @@
     </main>
 
     <script>
-        /* ==========================================
-           DADOS INICIAIS (SEED) E NÍVEIS
-           ========================================== */
-        const defaultQuestions = [
-            // ITSM E OPERAÇÕES
-            { category: "Gestão de Serviços e Operações", text: "1. Gestão de Mudanças: Existe um processo formal para mudanças em produção (CAB, análise de impacto, plano de rollback)?",
-              options: [
-                  { value: 0, text: "Não existe controle. Mudanças são feitas diretamente em produção sem aviso." },
-                  { value: 1, text: "Existe comunicação informal, mas sem análise estruturada de impacto ou rollback." },
-                  { value: 2, text: "Processo definido, com aprovação gerencial, mas o rollback raramente é planejado." },
-                  { value: 3, text: "CAB estabelecido. Análise de impacto e planos de rollback são obrigatórios." },
-                  { value: 4, text: "Processo automatizado (CI/CD) com validação de impacto e rollback automático." }
-              ]},
-            { category: "Gestão de Serviços e Operações", text: "2. Catálogo de Serviços: A TI possui um catálogo de serviços claro, com prazos e responsabilidades definidos e acessíveis?",
-              options: [
-                  { value: 0, text: "Não há catálogo. Solicitações são feitas via WhatsApp, e-mail ou telefone." },
-                  { value: 1, text: "Existe uma lista informal, mas os prazos e responsáveis não são claros." },
-                  { value: 2, text: "Catálogo básico em uso pela TI, mas pouco divulgado ou utilizado pelo negócio." },
-                  { value: 3, text: "Catálogo estruturado, acessível ao usuário, com SLAs e responsáveis definidos." },
-                  { value: 4, text: "Portal de autoatendimento avançado com fluxos de aprovação e provisionamento automáticos." }
-              ]},
-            { category: "Gestão de Serviços e Operações", text: "3. Gestão de Incidentes: Existe uma ferramenta de chamados com categorização, priorização e base de conhecimento?",
-              options: [
-                  { value: 0, text: "Não há ferramenta de chamados. Tudo é resolvido na base do esforço sem registro." },
-                  { value: 1, text: "Temos uma ferramenta, mas sem categorização adequada ou base de conhecimento." },
-                  { value: 2, text: "Ferramenta em uso com priorização básica, mas a base de conhecimento é fraca." },
-                  { value: 3, text: "Processo estruturado (ITIL), SLA medido e base de conhecimento alimentada regularmente." },
-                  { value: 4, text: "Resolução proativa, automação de incidentes conhecidos (AIOps) e base de conhecimento madura." }
-              ]},
-            { category: "Gestão de Serviços e Operações", text: "4. Backup e DR: O Plano de Recuperação de Desastres (DRP) é testado integralmente pelo menos uma vez ao ano?",
-              options: [
-                  { value: 0, text: "Não há rotina formal de backup ou plano de desastres." },
-                  { value: 1, text: "Fazemos backup, mas nunca testamos um plano de recuperação de desastres." },
-                  { value: 2, text: "Temos um DRP documentado, mas os testes são raros ou apenas teóricos." },
-                  { value: 3, text: "O DRP é testado com sucesso pelo menos uma vez ao ano para sistemas críticos." },
-                  { value: 4, text: "Testes automatizados contínuos de DR com RTO e RPO próximos a zero (Alta Disponibilidade)." }
-              ]},
-            { category: "Gestão de Serviços e Operações", text: "5. Gestão de Ativos (CMDB): Há um inventário automatizado de hardware e software que identifique riscos de licenciamento?",
-              options: [
-                  { value: 0, text: "Não há inventário confiável. Dependemos de planilhas manuais desatualizadas." },
-                  { value: 1, text: "Temos controle de hardware básico, mas software e licenças são negligenciados." },
-                  { value: 2, text: "Inventário atualizado periodicamente, mas de forma semi-manual." },
-                  { value: 3, text: "Ferramenta automatizada descobre ativos na rede e controla licenças." },
-                  { value: 4, text: "CMDB integrado dinamicamente a processos de mudança, incidentes e gestão financeira." }
-              ]},
-            { category: "Gestão de Serviços e Operações", text: "6. Monitoramento: A TI é avisada de falhas por sistemas proativos antes que o usuário reclame?",
-              options: [
-                  { value: 0, text: "Totalmente reativo. Só sabemos que caiu quando o usuário liga." },
-                  { value: 1, text: "Monitoramento básico de ping/link, mas falhas de sistema passam despercebidas." },
-                  { value: 2, text: "Monitoramento de infra e serviços, com alertas via e-mail/painel para a equipe." },
-                  { value: 3, text: "Monitoramento abrangente da experiência do usuário (APM) e alertas integrados." },
-                  { value: 4, text: "Monitoramento preditivo e auto-remediação (scripts resolvem o problema sozinhos)." }
-              ]},
+        let db = { evaluations: [] };
+        let activeEval = null;
+        let currentIdx = 0;
 
-            // INFRAESTRUTURA E CLOUD
-            { category: "Infraestrutura e Automação", text: "7. Patch Management: As atualizações e correções são aplicadas de forma centralizada e automatizada?",
-              options: [
-                  { value: 0, text: "Não há controle. Depende de cada usuário ou equipamento atualizar." },
-                  { value: 1, text: "Atualizações são feitas manualmente quando há tempo ou problema." },
-                  { value: 2, text: "Existe política e ferramenta (ex: WSUS), mas aplicada de forma irregular." },
-                  { value: 3, text: "Rotina automatizada e centralizada de patches com janelas de manutenção regulares." },
-                  { value: 4, text: "Gestão de vulnerabilidades integrada, patching 100% automatizado e auditado." }
-              ]},
-            { category: "Infraestrutura e Automação", text: "8. Provisionamento: A criação de ambientes ou usuários é feita via automação ou segue um fluxo manual?",
-              options: [
-                  { value: 0, text: "100% manual. Exige configuração máquina a máquina, sistema a sistema." },
-                  { value: 1, text: "Uso de imagens clonadas ou scripts simples, mas ainda muito dependente de humanos." },
-                  { value: 2, text: "Provisionamento de usuários (AD/IAM) é razoavelmente automatizado." },
-                  { value: 3, text: "Uso de automação padrão (ex: Ansible, Terraform básico) para infra e acessos." },
-                  { value: 4, text: "Infraestrutura como Código (IaC) ponta a ponta. Zero intervenção manual." }
-              ]},
-            { category: "Infraestrutura e Automação", text: "9. Cloud e Escalabilidade: A infraestrutura permite escalar recursos sob demanda (elástica)?",
-              options: [
-                  { value: 0, text: "Ambiente 100% físico e estático. Compras de hardware demoram meses." },
-                  { value: 1, text: "Virtualização local, mas sem capacidade de crescer dinamicamente." },
-                  { value: 2, text: "Uso de Cloud (IaaS) apenas como data center virtual, sem elasticidade real." },
-                  { value: 3, text: "Arquitetura híbrida/Cloud com capacidade de escalar recursos rapidamente sob demanda." },
-                  { value: 4, text: "Arquitetura Cloud-Native, microsserviços e auto-scaling 100% elástico." }
-              ]},
-
-            // NEGÓCIOS E QUALIDADE
-            { category: "Estratégia e Negócios", text: "10. SLAs Contratuais: Existem acordos de nível de serviço (SLA) formalizados com o negócio e relatórios mensais?",
-              options: [
-                  { value: 0, text: "Não existem SLAs ou metas de tempo de atendimento." },
-                  { value: 1, text: "SLAs informais apenas dentro da TI, desconhecidos pelo negócio." },
-                  { value: 2, text: "SLAs definidos na ferramenta, mas não reportados ou discutidos com o negócio." },
-                  { value: 3, text: "SLAs formalizados, medidos e discutidos mensalmente com as áreas." },
-                  { value: 4, text: "Foco em XLAs (Experience Level Agreements) medindo o impacto real no negócio." }
-              ]},
-            { category: "Estratégia e Negócios", text: "11. Indicadores de Performance: O desempenho é medido por KPIs técnicos e de negócio (Custo, Retenção)?",
-              options: [
-                  { value: 0, text: "Nenhum indicador de performance é medido." },
-                  { value: 1, text: "Mede-se apenas volume de chamados e tempo básico." },
-                  { value: 2, text: "Indicadores técnicos (Uptime, MTTR) acompanhados internamente." },
-                  { value: 3, text: "Dashboards unem KPIs técnicos com impacto operacional (ex: paradas vs receita)." },
-                  { value: 4, text: "Visibilidade em tempo real de KPIs técnicos e de negócio direcionando as decisões." }
-              ]},
-            { category: "Estratégia e Negócios", text: "12. Experiência do Usuário: Existe medição estruturada de satisfação (CSAT ou NPS) após interações com a TI?",
-              options: [
-                  { value: 0, text: "Não medimos a satisfação do usuário." },
-                  { value: 1, text: "Avaliação esporádica ou informal (boca a boca)." },
-                  { value: 2, text: "Pesquisa de CSAT ativada no fechamento de chamados, mas baixa adesão/análise." },
-                  { value: 3, text: "CSAT/NPS monitorado ativamente. Respostas negativas geram ações de correção." },
-                  { value: 4, text: "Cultura focada na experiência. O feedback impulsiona o design de novos serviços." }
-              ]},
-            { category: "Estratégia e Negócios", text: "13. Débito Técnico: Há orçamento e cronograma para a modernização de sistemas legados?",
-              options: [
-                  { value: 0, text: "Não se fala em débito técnico. Sistemas antigos são mantidos 'até quebrarem'." },
-                  { value: 1, text: "A TI reconhece o problema, mas o negócio não aprova verba para modernizar." },
-                  { value: 2, text: "Existem iniciativas isoladas de modernização quando um sistema se torna crítico." },
-                  { value: 3, text: "Orçamento e roadmap anuais dedicados à redução metódica do débito técnico." },
-                  { value: 4, text: "Débito técnico é gerido no backlog das equipes ágeis, com refatoração contínua." }
-              ]},
-            { category: "Estratégia e Negócios", text: "14. Planejamento Financeiro: O orçamento de TI é discutido como investimento ou apenas como custo?",
-              options: [
-                  { value: 0, text: "TI é vista estritamente como centro de despesa a ser cortado." },
-                  { value: 1, text: "Orçamento focado apenas em manter as luzes acesas (Opex e licenças base)." },
-                  { value: 2, text: "Existe verba para projetos de negócio, mas a TI tem pouco poder estratégico." },
-                  { value: 3, text: "TI atua com gestão de portfólio. Projetos têm ROI/TCO calculados e aprovados." },
-                  { value: 4, text: "TI é parceira de receita. FinOps maduro e orçamento orientado a produtos/valor." }
-              ]},
-            { category: "Estratégia e Negócios", text: "15. Tomada de Decisão: As prioridades de TI são definidas com base em dados ou por quem 'grita mais alto'?",
-              options: [
-                  { value: 0, text: "Prioridade é definida pela pressão política ou 'quem grita mais alto'." },
-                  { value: 1, text: "Reuniões subjetivas decidem o roadmap sem critérios claros." },
-                  { value: 2, text: "Existe um comitê de TI, mas as decisões carecem de embasamento em dados concretos." },
-                  { value: 3, text: "Matrizes de priorização (Valor x Esforço) e dados guiam o portfólio de projetos." },
-                  { value: 4, text: "Governança ágil de portfólio. Decisões 100% data-driven e alinhadas aos OKRs corporativos." }
-              ]},
-
-            // DADOS E SEGURANÇA
-            { category: "Arquitetura e Segurança", text: "16. Arquitetura de Dados: Existe uma visão única dos dados ou eles vivem em silos?",
-              options: [
-                  { value: 0, text: "Silos totais. Dados duplicados e conflitantes espalhados em planilhas." },
-                  { value: 1, text: "Sistemas fechados com integrações manuais pontuais (arquivos TXT/CSV)." },
-                  { value: 2, text: "Data Warehouse ou banco centralizado básico, mas integrações são difíceis." },
-                  { value: 3, text: "Arquitetura de integração madura (APIs) e governança de dados estabelecida." },
-                  { value: 4, text: "Data Lake/Mesh moderno, dados democratizados, confiáveis e explorados via IA/Analytics." }
-              ]},
-            { category: "Arquitetura e Segurança", text: "17. Agilidade: A TI utiliza metodologias ágeis para entregas incrementais e ciclos curtos?",
-              options: [
-                  { value: 0, text: "Nenhuma metodologia. Projetos são caóticos." },
-                  { value: 1, text: "Modelo cascata tradicional, projetos demoram meses para gerar valor." },
-                  { value: 2, text: "Algumas equipes tentam usar Scrum/Kanban, mas falta cultura ágil no negócio." },
-                  { value: 3, text: "Metodologias ágeis consolidadas na TI, com entregas frequentes de valor." },
-                  { value: 4, text: "Agilidade em escala organizacional (Business Agility). TI e Negócio no mesmo fluxo." }
-              ]},
-            { category: "Arquitetura e Segurança", text: "18. Cibersegurança: A empresa adota princípios Zero Trust e possui EDR/XDR?",
-              options: [
-                  { value: 0, text: "Contamos apenas com antivírus gratuito/básico e firewall de operadora." },
-                  { value: 1, text: "Firewall corporativo e antivírus gerenciado, mas foco apenas em perímetro." },
-                  { value: 2, text: "Acesso remoto seguro (VPN) e proteção endpoint ativa, sem monitoramento contínuo." },
-                  { value: 3, text: "Ferramentas EDR/XDR, testes de intrusão anuais e monitoramento SOC." },
-                  { value: 4, text: "Arquitetura Zero Trust madura, SOC 24/7 e resposta automática a ameaças." }
-              ]},
-            { category: "Arquitetura e Segurança", text: "19. Privacidade e LGPD: Existem controles de privacidade de dados (Privacy by Design) implementados?",
-              options: [
-                  { value: 0, text: "Nenhuma adequação à LGPD ou preocupação com privacidade." },
-                  { value: 1, text: "Apenas políticas de papel (Termos de Uso), sem controles técnicos de proteção." },
-                  { value: 2, text: "Mapeamento de dados realizado, mas a segurança em novos projetos é reativa." },
-                  { value: 3, text: "Privacy by Design exigido em projetos. Dados sensíveis são mascarados/criptografados." },
-                  { value: 4, text: "Governança de privacidade automatizada, auditorias regulares e cultura de proteção de dados." }
-              ]},
-            { category: "Arquitetura e Segurança", text: "20. Matriz de Riscos: Existe um registro dinâmico de riscos de TI com planos de mitigação?",
-              options: [
-                  { value: 0, text: "Riscos são ignorados até que um desastre aconteça." },
-                  { value: 1, text: "Temos noção dos riscos, mas nada está documentado ou gerenciado." },
-                  { value: 2, text: "Uma matriz de riscos foi criada em auditoria passada, mas não é atualizada." },
-                  { value: 3, text: "Registro dinâmico de riscos operacionais/cibernéticos com donos e ações de mitigação." },
-                  { value: 4, text: "Gestão de riscos integrada ao compliance corporativo (GRC) e revisada em tempo real." }
-              ]},
-
-            // PESSOAS E INOVAÇÃO
-            { category: "Cultura e Inovação", text: "21. Gestão de Terceiros: Os contratos com fornecedores possuem cláusulas de desempenho e auditoria?",
-              options: [
-                  { value: 0, text: "Contratos básicos, baseados em horas/esforço sem garantias de entrega." },
-                  { value: 1, text: "Temos fornecedores críticos, mas a gestão do contrato é puramente financeira." },
-                  { value: 2, text: "Existem SLAs em contrato, mas a TI não cobra ou audita o cumprimento regularmente." },
-                  { value: 3, text: "Gestão ativa de fornecedores, reuniões de performance mensais e multas aplicáveis." },
-                  { value: 4, text: "Parcerias estratégicas (Vendor Management), auditorias técnicas e co-inovação." }
-              ]},
-            { category: "Cultura e Inovação", text: "22. Retenção de Talentos: Existe um plano de carreira e treinamentos para evitar depender de 'heróis'?",
-              options: [
-                  { value: 0, text: "Alta rotatividade. Sem plano de carreira e dependência letal de 1 ou 2 pessoas." },
-                  { value: 1, text: "Treinamentos esporádicos, mas conhecimento crítico segue concentrado em poucos." },
-                  { value: 2, text: "Existe incentivo para cursos, mas sem estrutura de mentoria ou sucessão clara." },
-                  { value: 3, text: "Plano de carreira técnico estabelecido, verba de treinamento e documentação exigida." },
-                  { value: 4, text: "Cultura de aprendizado contínuo, pair-programming, retenção alta e zero 'heróis' exclusivos." }
-              ]},
-            { category: "Cultura e Inovação", text: "23. Cultura de Post-Mortem: Quando falha, o foco é na correção do processo ou na busca por culpados?",
-              options: [
-                  { value: 0, text: "Cultura de medo. Busca-se o culpado para punir ou demitir." },
-                  { value: 1, text: "O problema é consertado rapidamente para 'esconder' a falha da diretoria." },
-                  { value: 2, text: "Faz-se uma reunião, mas a conclusão costuma ser 'erro humano' sem melhorar o sistema." },
-                  { value: 3, text: "Reuniões estruturadas de lições aprendidas geram tarefas de melhoria preventiva." },
-                  { value: 4, text: "Cultura 'Blame-free' (SRE). Falhas geram aprendizado sistêmico e automações de prevenção." }
-              ]},
-            { category: "Cultura e Inovação", text: "24. Inovação Aberta: A TI possui tempo/orçamento dedicado para testar novas tecnologias (PoCs)?",
-              options: [
-                  { value: 0, text: "Zero tempo para inovação. 100% da equipe apagando incêndios operacionais." },
-                  { value: 1, text: "Inovação acontece apenas no tempo livre ou como esforço pessoal de entusiastas." },
-                  { value: 2, text: "Algumas tecnologias são testadas, mas sem orçamento oficial ou metodologia." },
-                  { value: 3, text: "Orçamento e tempo dedicados para Provas de Conceito (PoCs) alinhadas ao negócio." },
-                  { value: 4, text: "Laboratório de inovação/Hackathons institucionalizados, cocriando o futuro do negócio." }
-              ]},
-            { category: "Cultura e Inovação", text: "25. Colaboração (DevOps): As equipes de desenvolvimento e operações trabalham integradas?",
-              options: [
-                  { value: 0, text: "Muros gigantes. Dev cria o problema, Ops que se vire para rodar." },
-                  { value: 1, text: "Passagem de bastão por tickets pesados, muita burocracia e atrito." },
-                  { value: 2, text: "Algumas automações facilitam o deploy, mas os times ainda têm metas conflitantes." },
-                  { value: 3, text: "Práticas DevOps implementadas. Times colaboram ativamente em automação (CI/CD)." },
-                  { value: 4, text: "Cultura DevOps/DevSecOps madura. Times de produto end-to-end com responsabilidade compartilhada." }
-              ]}
+        // Perguntas adaptadas para o Case Grupo Horizonte
+        const questionsCase = [
+            { q: "Governança e IPO: Como está o alinhamento dos sistemas (HorizonLog) com as exigências de auditoria para o IPO 2027?", options: ["Inexistente", "Manual/Planilhas", "Parcialmente Integrado", "Totalmente Auditável"] },
+            { q: "Segurança e LGPD: Como os dados dos motoristas e clientes são protegidos no Data Center atual?", options: ["Sem controle", "Apenas Firewall", "Criptografia Básica", "Zero Trust / Compliance"] },
+            { q: "Shadow IT: Qual o nível de controle sobre aplicações não autorizadas usadas pelas filiais?", options: ["Nenhum (Caos)", "Identificado mas não bloqueado", "Controlado via Proxy", "Bloqueio e Homologação Estrita"] }
         ];
 
-        const maturityLevels = [
-            { max: 0.8, name: "Nível 1 - Inicial", color: "text-red-600 bg-red-100 border-red-200", desc: "Ambiente reativo e caótico." },
-            { max: 1.6, name: "Nível 2 - Repetível", color: "text-orange-600 bg-orange-100 border-orange-200", desc: "Processos básicos existem, mas falham sob stress." },
-            { max: 2.4, name: "Nível 3 - Definido", color: "text-yellow-600 bg-yellow-100 border-yellow-200", desc: "Processos padronizados. TI apoiando o negócio." },
-            { max: 3.2, name: "Nível 4 - Gerenciado", color: "text-emerald-600 bg-emerald-100 border-emerald-200", desc: "Gestão por métricas, alta automação." },
-            { max: 4.0, name: "Nível 5 - Otimizado", color: "text-blue-600 bg-blue-100 border-blue-200", desc: "Melhoria contínua e inovação." }
-        ];
-
-        /* ==========================================
-           GERENCIAMENTO DE ESTADO E LOCALSTORAGE
-           ========================================== */
-        let db = { users: [], companies: [], questions: [], evaluations: [] };
-        let currentUser = null;
-        let activeEvaluationId = null; // ID da avaliação em andamento
-
-        function initDB() {
-            const stored = localStorage.getItem('ti_maturity_system_db');
-            if (stored) {
-                db = JSON.parse(stored);
-                
-                // Força a atualização do banco de questões caso ainda esteja com menos de 25 questões no storage local
-                if (db.questions && db.questions.length < 25) {
-                    db.questions = defaultQuestions.map((q, i) => ({ id: i+1, ...q }));
-                    saveDB();
-                }
-            } else {
-                // Seed Inicial
-                db.users = [
-                    { id: 1, username: 'admin', pass: '123', name: 'Administrador TI', role: 'admin' },
-                    { id: 2, username: 'avaliador', pass: '123', name: 'João Avaliador', role: 'evaluator' }
-                ];
-                db.questions = defaultQuestions.map((q, i) => ({ id: i+1, ...q }));
-                saveDB();
-            }
-        }
-        function saveDB() { localStorage.setItem('ti_maturity_system_db', JSON.stringify(db)); }
-        function generateId() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
-
-        /* ==========================================
-           ROTEAMENTO E AUTENTICAÇÃO
-           ========================================== */
         function login() {
-            const u = document.getElementById('login-user').value;
-            const p = document.getElementById('login-pass').value;
-            const user = db.users.find(x => x.username === u && x.pass === p);
-            if (user) {
-                currentUser = user;
-                document.getElementById('main-nav').classList.remove('hidden');
-                document.getElementById('current-user-display').textContent = `Olá, ${user.name} (${user.role})`;
-                if(user.role === 'admin') document.getElementById('nav-questions').classList.remove('hidden');
-                else document.getElementById('nav-questions').classList.add('hidden');
-                
-                navigate('dashboard');
-            } else { alert('Credenciais inválidas.'); }
+            document.getElementById('main-nav').classList.remove('hidden');
+            navigate('dashboard');
         }
 
-        function logout() {
-            currentUser = null;
-            document.getElementById('main-nav').classList.add('hidden');
-            document.getElementById('login-user').value = '';
-            document.getElementById('login-pass').value = '';
-            navigate('login');
-        }
-
-        function navigate(viewId) {
+        function navigate(view) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.getElementById('view-' + viewId).classList.add('active');
-            
-            if (viewId === 'dashboard') loadDashboard();
-            if (viewId === 'companies') loadCompanies();
-            if (viewId === 'questions') loadQuestions();
-            if (viewId === 'evaluations') loadEvaluations();
+            document.getElementById('view-' + view).classList.add('active');
         }
 
-        /* ==========================================
-           MÓDULO: EMPRESAS E DASHBOARD
-           ========================================== */
-        function loadDashboard() {
-            document.getElementById('dash-companies-count').textContent = db.companies.length;
-            document.getElementById('dash-evaluations-count').textContent = db.evaluations.filter(e => e.status === 'completed').length;
-            document.getElementById('dash-questions-count').textContent = db.questions.length;
-        }
-
-        function loadCompanies() {
-            const tbody = document.getElementById('companies-list');
-            tbody.innerHTML = '';
-            db.companies.forEach(c => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${c.name}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${c.industry}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${c.contact}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button onclick="deleteCompany('${c.id}')" class="text-red-600 hover:text-red-900">Excluir</button>
-                        </td>
-                    </tr>`;
-            });
-            // Preencher select de nova avaliação
-            const select = document.getElementById('eval-company-select');
-            select.innerHTML = db.companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-        }
-
-        function saveCompany() {
-            const name = document.getElementById('comp-name').value;
-            if(!name) return alert('Nome é obrigatório');
-            db.companies.push({
-                id: generateId(), name: name,
-                industry: document.getElementById('comp-industry').value,
-                cnpj: document.getElementById('comp-cnpj').value,
-                contact: document.getElementById('comp-contact').value
-            });
-            saveDB();
-            document.getElementById('form-company').classList.add('hidden');
-            loadCompanies();
-            alert('Empresa cadastrada com sucesso!');
-        }
-
-        function deleteCompany(id) {
-            if(confirm('Tem certeza? A empresa e TODAS as avaliações ligadas a ela serão excluídas permanentemente.')){
-                // Remove a empresa
-                db.companies = db.companies.filter(c => c.id !== id);
-                // Remove (em cascata) as avaliações associadas a esta empresa
-                db.evaluations = db.evaluations.filter(e => e.companyId !== id);
-                
-                saveDB(); 
-                loadCompanies();
-                loadDashboard(); // Atualiza os contadores em background
-            }
-        }
-
-        /* ==========================================
-           MÓDULO: QUESTÕES (ADMIN)
-           ========================================== */
-        function loadQuestions() {
-            const container = document.getElementById('questions-list');
-            container.innerHTML = db.questions.map((q, i) => `
-                <div class="mb-4 p-4 border rounded-lg bg-gray-50">
-                    <div class="font-bold text-gray-800 text-sm mb-2">Q${i+1} - [${q.category}] ${q.text}</div>
-                    <ul class="text-xs text-gray-600 space-y-1 pl-4 list-disc">
-                        ${q.options.map(o => `<li>Nota ${o.value}: ${o.text}</li>`).join('')}
-                    </ul>
-                </div>
-            `).join('');
-        }
-
-        /* ==========================================
-           MÓDULO: AVALIAÇÕES (LISTA E INÍCIO)
-           ========================================== */
-        function loadEvaluations() {
-            const container = document.getElementById('evaluations-list');
-            if(db.evaluations.length === 0) {
-                container.innerHTML = '<p class="text-gray-500">Nenhuma avaliação encontrada.</p>'; return;
-            }
-            container.innerHTML = db.evaluations.map(e => {
-                const comp = db.companies.find(c => c.id === e.companyId)?.name || 'Empresa Deletada';
-                const statusBadge = e.status === 'completed' 
-                    ? `<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-bold">Concluído (Nota: ${e.score})</span>` 
-                    : `<span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs font-bold">Rascunho</span>`;
-                
-                let btn = e.status === 'completed'
-                    ? `<button onclick="showReport('${e.id}')" class="text-blue-600 font-medium text-sm">Ver Relatório</button>`
-                    : `<button onclick="resumeEvaluation('${e.id}')" class="text-orange-600 font-medium text-sm">Continuar</button>`;
-                
-                return `
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex justify-between items-center">
-                        <div>
-                            <h4 class="font-bold text-gray-800">${comp}</h4>
-                            <p class="text-xs text-gray-500">Data: ${e.date} | ${statusBadge}</p>
-                        </div>
-                        <div>${btn}</div>
-                    </div>`;
-            }).reverse().join('');
+        function openScopeModal() {
+            document.getElementById('modal-scope').classList.remove('hidden');
         }
 
         function startEvaluation() {
-            const compId = document.getElementById('eval-company-select').value;
-            if(!compId) return alert('Cadastre uma empresa primeiro.');
-            
-            const newEval = {
-                id: generateId(), companyId: compId, evaluatorId: currentUser.id, evaluatorName: currentUser.name,
-                date: new Date().toLocaleDateString(), status: 'draft',
-                answers: [], currentIndex: 0
+            const scope = document.querySelector('input[name="scope-type"]:checked').value;
+            activeEval = { 
+                scope: scope, 
+                answers: [], 
+                date: new Date().toLocaleDateString(),
+                company: scope === 'case' ? 'Grupo Horizonte S.A.' : 'App Maturity Corecheck'
             };
-            // Inicializa respostas nulas baseado nas questões atuais
-            db.questions.forEach(q => newEval.answers.push({ qId: q.id, value: null, text: '' }));
-            db.evaluations.push(newEval);
-            saveDB();
-            
-            document.getElementById('modal-new-eval').classList.add('hidden');
-            resumeEvaluation(newEval.id);
-        }
-
-        /* ==========================================
-           O PROCESSO DE AVALIAÇÃO (QUIZ FLOW)
-           ========================================== */
-        let currentEvalObj = null;
-
-        function resumeEvaluation(id) {
-            currentEvalObj = db.evaluations.find(e => e.id === id);
-            activeEvaluationId = id;
+            currentIdx = 0;
+            document.getElementById('modal-scope').classList.add('hidden');
+            renderQuiz();
             navigate('quiz');
-            
-            const comp = db.companies.find(c => c.id === currentEvalObj.companyId);
-            document.getElementById('quiz-company-name').textContent = `Avaliando: ${comp ? comp.name : 'Desconhecida'}`;
-            document.getElementById('quiz-evaluator-name').textContent = currentEvalObj.evaluatorName;
-            
-            renderQuizQuestion();
         }
 
-        function renderQuizQuestion() {
-            const idx = currentEvalObj.currentIndex;
-            const q = db.questions[idx];
-            const ans = currentEvalObj.answers[idx];
-            const total = db.questions.length;
-
-            document.getElementById('quiz-category').textContent = q.category;
-            document.getElementById('quiz-question').textContent = q.text;
-            document.getElementById('quiz-progress-text').textContent = `Pergunta ${idx + 1} de ${total}`;
-            document.getElementById('quiz-progress-percent').textContent = Math.round(((idx)/total)*100)+'%';
-            document.getElementById('quiz-progress-bar').style.width = ((idx)/total)*100+'%';
-
-            document.getElementById('quiz-btn-prev').disabled = idx === 0;
-            document.getElementById('quiz-btn-next').innerHTML = (idx === total - 1) ? 'Finalizar &#10003;' : 'Avançar &rarr;';
-
-            // Opções
-            const optContainer = document.getElementById('quiz-options');
-            optContainer.innerHTML = q.options.map(opt => {
-                const isSel = ans.value === opt.value;
-                return `
-                    <div onclick="selectQuizOption(${opt.value})" class="option-card border-2 rounded-xl p-4 cursor-pointer flex items-center ${isSel ? 'selected' : 'border-gray-200 bg-white'}">
-                        <div class="flex-shrink-0 w-8 h-8 rounded-lg mr-4 flex items-center justify-center font-bold text-sm ${isSel ? 'bg-blue-200 text-blue-800' : 'bg-gray-100 text-gray-500'}">
-                            ${opt.value}
-                        </div>
-                        <div class="text-sm text-gray-700 font-medium">${opt.text}</div>
-                    </div>`;
-            }).join('');
-
-            // Campo extra
-            const extraCont = document.getElementById('quiz-extra-container');
-            const extraInput = document.getElementById('quiz-extra-input');
-            const extraLabel = document.getElementById('quiz-extra-label');
-            
-            extraInput.value = ans.text || '';
-            extraInput.oninput = (e) => { ans.text = e.target.value; saveDB(); validateQuizNext(); };
-
-            if(ans.value !== null) {
-                extraCont.classList.remove('hidden');
-                if(ans.value < 3) {
-                    extraCont.className = "mb-8 p-4 rounded-lg border border-orange-200 bg-orange-50";
-                    extraLabel.innerHTML = "🚨 Plano de Ação (Obrigatório)";
-                    extraLabel.className = "block text-sm font-bold mb-2 text-orange-800";
-                } else {
-                    extraCont.className = "mb-8 p-4 rounded-lg border border-emerald-200 bg-emerald-50";
-                    extraLabel.innerHTML = "✅ Evidência (Obrigatório)";
-                    extraLabel.className = "block text-sm font-bold mb-2 text-emerald-800";
-                }
-            } else {
-                extraCont.classList.add('hidden');
-            }
-            validateQuizNext();
+        function renderQuiz() {
+            const qs = activeEval.scope === 'case' ? questionsCase : [{q: "Qualidade do Código: ...", options: ["Pobre", "Médio", "Bom", "Excelente"]}];
+            const q = qs[currentIdx];
+            document.getElementById('quiz-scope-badge').textContent = `ESCOPO: ${activeEval.company.toUpperCase()}`;
+            document.getElementById('quiz-question').textContent = q.q;
+            document.getElementById('quiz-options').innerHTML = q.options.map((o, i) => `
+                <button onclick="selectOpt(${i})" class="w-full text-left p-4 border rounded-xl hover:bg-blue-50 transition">${o}</button>
+            `).join('');
+            document.getElementById('btn-next').textContent = currentIdx === qs.length -1 ? "Gerar PDTI" : "Próximo";
         }
 
-        function selectQuizOption(val) {
-            const ans = currentEvalObj.answers[currentEvalObj.currentIndex];
-            if(ans.value !== null) {
-                const wasLow = ans.value < 3; const isLow = val < 3;
-                if(wasLow !== isLow) ans.text = ''; // Reseta se mudar o tipo exigido
-            }
-            ans.value = val;
-            saveDB(); renderQuizQuestion();
-        }
-
-        function validateQuizNext() {
-            const ans = currentEvalObj.answers[currentEvalObj.currentIndex];
-            const btn = document.getElementById('quiz-btn-next');
-            btn.disabled = !(ans.value !== null && ans.text.trim().length > 3);
+        function selectOpt(i) {
+            activeEval.answers[currentIdx] = { val: i, obs: document.getElementById('quiz-obs').value };
+            quizNext();
         }
 
         function quizNext() {
-            if(currentEvalObj.currentIndex < db.questions.length - 1) {
-                currentEvalObj.currentIndex++;
-                saveDB(); renderQuizQuestion();
+            const qs = activeEval.scope === 'case' ? questionsCase : [1];
+            if(currentIdx < qs.length - 1) {
+                currentIdx++;
+                renderQuiz();
+                document.getElementById('quiz-obs').value = "";
             } else {
-                finishEvaluation();
-            }
-        }
-        function quizPrev() {
-            if(currentEvalObj.currentIndex > 0) {
-                currentEvalObj.currentIndex--;
-                saveDB(); renderQuizQuestion();
+                generateReport();
             }
         }
 
-        function finishEvaluation() {
-            currentEvalObj.status = 'completed';
+        function generateReport() {
+            const content = document.getElementById('report-content');
+            const isCase = activeEval.scope === 'case';
             
-            // Calculo simples de score
-            const sum = currentEvalObj.answers.reduce((acc, a) => acc + a.value, 0);
-            const score = (sum / db.questions.length).toFixed(1);
-            currentEvalObj.score = score;
-            
-            let lvl = maturityLevels[maturityLevels.length-1];
-            for(let m of maturityLevels) { if(score <= m.max) { lvl = m; break; } }
-            currentEvalObj.maturityLevel = lvl.name;
-            
-            saveDB();
-            showReport(currentEvalObj.id);
-        }
-
-        /* ==========================================
-           MÓDULO: RELATÓRIO FINAL
-           ========================================== */
-        function showReport(id) {
-            const e = db.evaluations.find(x => x.id === id);
-            const comp = db.companies.find(c => c.id === e.companyId);
-            
+            content.innerHTML = `
+                <div class="border-b-4 border-blue-600 pb-4 mb-6">
+                    <h1 class="text-3xl font-black">${isCase ? 'PLANO DIRETOR DE TI - GRUPO HORIZONTE' : 'PLANO DE MELHORIA - CORECHECK'}</h1>
+                    <p class="text-gray-500 font-bold">OBJETO DE ANÁLISE: ${activeEval.company}</p>
+                </div>
+                <div class="space-y-6">
+                    <section>
+                        <h3 class="text-xl font-bold text-blue-700">1. Diagnóstico Situacional</h3>
+                        <p class="mt-2">${isCase ? 'A organização enfrenta desafios críticos de Shadow IT e descentralização do sistema HorizonLog, impactando a prontidão para o IPO 2027.' : 'O sistema necessita de migração para banco de dados persistente e refatoração de UX conforme feedback do mentor.'}</p>
+                    </section>
+                    <section class="bg-slate-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-bold">2. Prioridades Estratégicas (GUT)</h3>
+                        <ul class="list-disc ml-5 mt-2">
+                            ${isCase ? '<li>Segurança LGPD (Dados Motoristas) - Crítico</li><li>Centralização HorizonLog - Alto</li>' : '<li>Persistência de Dados - Crítico</li><li>Refatoração de UI/UX - Médio</li>'}
+                        </ul>
+                    </section>
+                    <div class="pt-10 text-xs text-gray-400 border-t">
+                        Relatório gerado em ${activeEval.date} por Sistema Maturity Corecheck - Auditoria Formal.
+                    </div>
+                </div>
+            `;
             navigate('report');
-            document.getElementById('report-company-info').textContent = `Empresa: ${comp ? comp.name : '---'} | Avaliador: ${e.evaluatorName} | Data: ${e.date}`;
-            document.getElementById('report-score').textContent = e.score;
-            
-            let lvl = maturityLevels.find(m => m.name === e.maturityLevel) || maturityLevels[0];
-            const badge = document.getElementById('report-badge');
-            badge.textContent = `Nível: ${lvl.name}`;
-            badge.className = `inline-block px-4 py-2 rounded-lg font-bold text-sm mb-3 mt-2 border ${lvl.color}`;
-            document.getElementById('report-desc').textContent = lvl.desc;
-
-            // Detalhamento e Categorias
-            const catData = {};
-            const detailsHtml = e.answers.map((ans, i) => {
-                const q = db.questions.find(x => x.id === ans.qId);
-                if(!q) return '';
-                
-                // Categorias
-                if(!catData[q.category]) catData[q.category] = { sum: 0, count: 0 };
-                catData[q.category].sum += ans.value;
-                catData[q.category].count++;
-
-                // Cards de detalhe
-                const isAction = ans.value < 3;
-                return `
-                    <div class="p-4 rounded border ${isAction ? 'bg-orange-50 border-orange-100' : 'bg-emerald-50 border-emerald-100'}">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="font-bold text-sm text-gray-700">Q${i+1}. ${q.category}</span>
-                            <span class="font-bold rounded bg-white px-2 py-1 text-xs shadow-sm border">Nota: ${ans.value}</span>
-                        </div>
-                        <p class="text-sm text-gray-800 mb-2">${q.text}</p>
-                        <p class="text-xs font-semibold ${isAction ? 'text-orange-700' : 'text-emerald-700'} mb-1">${isAction ? 'Plano de Ação:' : 'Evidência:'}</p>
-                        <p class="text-sm bg-white p-2 border rounded italic text-gray-600">${ans.text}</p>
-                    </div>`;
-            }).join('');
-            
-            document.getElementById('report-details').innerHTML = detailsHtml;
-
-            // Gráficos de barra
-            const catContainer = document.getElementById('report-categories');
-            catContainer.innerHTML = '';
-            for(let cat in catData) {
-                const score = (catData[cat].sum / catData[cat].count).toFixed(1);
-                const pct = (score / 4) * 100;
-                let c = "bg-red-500"; if(score>=1.5) c="bg-orange-400"; if(score>=2.5) c="bg-emerald-500"; if(score>=3.5) c="bg-blue-600";
-                
-                catContainer.innerHTML += `
-                    <div class="mb-3">
-                        <div class="flex justify-between text-xs font-bold text-gray-700 mb-1">
-                            <span>${cat}</span><span>${score} / 4.0</span>
-                        </div>
-                        <div class="w-full bg-gray-200 h-2 rounded"><div class="${c} h-2 rounded" style="width: ${pct}%"></div></div>
-                    </div>`;
-            }
         }
 
-        // Boot da Aplicação
-        initDB();
-        navigate('login');
-
+        function logout() { location.reload(); }
     </script>
 </body>
 </html>
