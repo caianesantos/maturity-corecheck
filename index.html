@@ -75,18 +75,14 @@
                     <h3 class="text-2xl font-bold mb-2">Definição de Escopo</h3>
                     <p class="text-gray-500 mb-6 italic">"Atenção: Valide o objeto analisado antes de prosseguir."</p>
                     
-                    <div class="space-y-4 mb-8">
-                        <label class="block p-4 border-2 rounded-xl cursor-pointer hover:border-blue-400 transition" id="label-scope-case">
-                            <input type="radio" name="scope-type" value="case" class="mr-2" checked>
-                            <span class="font-bold text-slate-800">PDTI do Caso (Grupo Horizonte S.A.)</span>
-                            <p class="text-xs text-gray-500 ml-6">Foco: HorizonLog, IPO 2027, Mariana, Dr. Alberto, LGPD Motoristas.</p>
-                        </label>
-                        <label class="block p-4 border-2 rounded-xl cursor-pointer hover:border-blue-400 transition" id="label-scope-app">
-                            <input type="radio" name="scope-type" value="app" class="mr-2">
-                            <span class="font-bold text-slate-800">PDTI do Aplicativo (Evolução Maturity Corecheck)</span>
-                            <p class="text-xs text-gray-500 ml-6">Foco: Banco de dados, UX, Backend, CI/CD, Débito Técnico.</p>
-                        </label>
+                    <div class="space-y-4 mb-4" id="scope-options-container">
+                        <!-- opções de escopo renderizadas pelo JavaScript -->
                     </div>
+                    <div class="grid grid-cols-1 gap-4 mb-6">
+                        <input type="text" id="new-company-name" class="w-full border rounded-lg p-3" placeholder="Nova empresa para auditoria">
+                        <button onclick="addCompany()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg transition">Adicionar Empresa</button>
+                    </div>
+                    <div id="custom-company-note" class="text-sm text-gray-500 mb-6">Você pode registrar empresas adicionais para criar novos relatórios de auditoria.</div>
 
                     <div class="flex justify-end space-x-3">
                         <button onclick="document.getElementById('modal-scope').classList.add('hidden')" class="px-4 py-2 text-gray-500">Cancelar</button>
@@ -122,6 +118,21 @@
                 </div>
             </div>
 
+            <!-- VISTA: HISTÓRICO DE AVALIAÇÕES -->
+            <div id="view-evaluations" class="view">
+                <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-2xl font-bold">Histórico de Auditorias</h2>
+                        <div class="text-sm text-gray-500">Armazenado localmente</div>
+                    </div>
+                    <div id="evaluations-list" class="space-y-3"></div>
+                    <div class="mt-6 flex space-x-3">
+                        <button onclick="exportEvaluations()" class="bg-slate-800 text-white px-4 py-2 rounded">Exportar JSON</button>
+                        <button onclick="clearEvaluations()" class="bg-red-600 text-white px-4 py-2 rounded">Limpar Histórico</button>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </main>
 
@@ -129,13 +140,82 @@
         let db = { evaluations: [] };
         let activeEval = null;
         let currentIdx = 0;
-
-        // Perguntas adaptadas para o Case Grupo Horizonte
-        const questionsCase = [
-            { q: "Governança e IPO: Como está o alinhamento dos sistemas (HorizonLog) com as exigências de auditoria para o IPO 2027?", options: ["Inexistente", "Manual/Planilhas", "Parcialmente Integrado", "Totalmente Auditável"] },
-            { q: "Segurança e LGPD: Como os dados dos motoristas e clientes são protegidos no Data Center atual?", options: ["Sem controle", "Apenas Firewall", "Criptografia Básica", "Zero Trust / Compliance"] },
-            { q: "Shadow IT: Qual o nível de controle sobre aplicações não autorizadas usadas pelas filiais?", options: ["Nenhum (Caos)", "Identificado mas não bloqueado", "Controlado via Proxy", "Bloqueio e Homologação Estrita"] }
+        const companies = [
+            { id: 'case', label: 'Grupo Horizonte S.A.', subtitle: 'HorizonLog, IPO 2027, Mariana, Dr. Alberto, LGPD Motoristas.', type: 'case', checked: true },
+            { id: 'app', label: 'App Maturity Corecheck', subtitle: 'Banco de dados, UX, Backend, CI/CD, Débito Técnico.', type: 'app', checked: false }
         ];
+        const customCompanies = [];
+        // Perguntas adaptadas para o Case Grupo Horizonte
+        const domains = [
+            {
+                id: 'd1',
+                name: 'Gestão de Serviços e Operações',
+                questions: [
+                    { id: 'Q01', q: 'Q01. Existe uma ferramenta formal de ITSM para registro, categorização e triagem de chamados e incidentes, ou o atendimento é feito sob demanda (balcão/mensagens)?' },
+                    { id: 'Q02', q: 'Q02. A empresa possui Acordos de Nível de Serviço (SLAs) definidos, monitorados e acordados explicitamente com as áreas de negócio e clientes?' },
+                    { id: 'Q03', q: 'Q03. Como é realizada a Gestão de Mudanças em sistemas? Existe um ambiente de homologação isolado para testes ou as alterações vão direto para a produção?' },
+                    { id: 'Q04', q: 'Q04. Há um processo estruturado de Gestão de Problemas para identificar, investigar e eliminar a causa raiz de incidentes de TI recorrentes?' },
+                    { id: 'Q05', q: 'Q05. A TI extrai e apresenta relatórios periódicos de disponibilidade (Uptime), Tempo Mestre de Atendimento (MTTR) e satisfação do usuário para a diretoria?' }
+                ]
+            },
+            {
+                id: 'd2',
+                name: 'Infraestrutura e Automação',
+                questions: [
+                    { id: 'Q06', q: 'Q06. A infraestrutura atual (nuvem ou local) possui capacidade de elasticidade automática e resiliência para suportar picos de acessos sem intervenção manual?' },
+                    { id: 'Q07', q: 'Q07. O provisionamento e a manutenção da infraestrutura de servidores são feitos via código (Infraestrutura como Código - IaC) ou de forma manual e artesanal?' },
+                    { id: 'Q08', q: 'Q08. Existe uma Base de Dados de Gerenciamento de Configuração (CMDB) ou um inventário automatizado para mapear o impacto da queda de um ativo sobre os outros?' },
+                    { id: 'Q09', q: 'Q09. Os dados gerados pelas filiais, sistemas satélites ou pátios são integrados em tempo real através de APIs robustas ou dependem de exportações manuais (como arquivos CSV/Excel)?' },
+                    { id: 'Q10', q: 'Q10. O ciclo de vida do hardware e as atualizações de segurança de softwares básicos/bancos de dados são revisados para mitigar a obsolescência tecnológica?' }
+                ]
+            },
+            {
+                id: 'd3',
+                name: 'Segurança da Informação e Risco',
+                questions: [
+                    { id: 'Q11', q: 'Q11. O Múltiplo Fator de Autenticação (MFA) e políticas de senhas complexas são obrigatórios para todas as contas, especialmente as de privilégio administrativo?' },
+                    { id: 'Q12', q: 'Q12. Existe uma rotina automatizada de backups de dados e, criticamente, são realizados testes periódicos de restauração (Restore) para validar as mídias?' },
+                    { id: 'Q13', q: 'Q13. A empresa possui um Plano de Recuperação de Desastres (DRP) formalizado e um site de contingência operando para garantir a continuidade em caso de desastre?' },
+                    { id: 'Q14', q: 'Q14. Os logs de auditoria dos sistemas e bancos de dados estão ativados por padrão e são armazenados centralizadamente de forma imutável e protegida?' },
+                    { id: 'Q15', q: 'Q15. Os acessos remotos aos servidores e bases de dados da empresa exigem obrigatoriamente redes privadas virtuais criptografadas (VPN) e autenticação forte?' }
+                ]
+            },
+            {
+                id: 'd4',
+                name: 'Estratégia, Negócios e Governança',
+                questions: [
+                    { id: 'Q16', q: 'Q16. O Planejamento Estratégico de TI (PDTI) está diretamente alinhado às metas financeiras e de expansão de longo prazo da organização?' },
+                    { id: 'Q17', q: 'Q17. A TI possui assento ou representação direta nos comitês executivos ou no Conselho de Administração para tomadas de decisão sobre investimentos?' },
+                    { id: 'Q18', q: 'Q18. Os investimentos em tecnologia são classificados estrategicamente de forma clara entre CAPEX (inovação/ativos) e OPEX (manutenção/operação)?' },
+                    { id: 'Q19', q: 'Q19. Existe uma Matriz de Riscos Corporativos atualizada que inclui explicitamente riscos cibernéticos, perda de dados e interrupção de processos de negócio?' },
+                    { id: 'Q20', q: 'Q20. A governança garante a segregação de funções sistêmicas (ex: impedir que o mesmo usuário cadastre fornecedores e aprove pagamentos no sistema)?' }
+                ]
+            },
+            {
+                id: 'd5',
+                name: 'Cultura, Pessoal e Inovação',
+                questions: [
+                    { id: 'Q21', q: 'Q21. Há políticas e ferramentas ativas para identificar, monitorar e mitigar o uso de Shadow IT (sistemas contratados por fora pelas áreas sem o aval da TI)?' },
+                    { id: 'Q22', q: 'Q22. A liderança realiza rotineiramente treinamentos e simulações de conscientização em cibersegurança (como engenharia social e phishing) para os usuários?' },
+                    { id: 'Q23', q: 'Q23. Existe um plano formal de retenção de talentos técnicos e mitigação do risco de dependência exclusiva de "pessoas-chave" (heróis da TI)?' },
+                    { id: 'Q24', q: 'Q24. O canal de denúncias éticas da empresa é estruturado de modo que garanta total anonimato e independência de investigação, inclusive para a alta liderança?' },
+                    { id: 'Q25', q: 'Q25. A empresa possui um inventário de dados pessoais (RoPA) estruturado e políticas claras de privacidade em conformidade real e auditável com a LGPD?' }
+                ]
+            }
+        ];
+        const questionsApp = [
+            { q: "O app Corecheck possui persistência e controle de versões adequados para auditoria?", options: ["Não", "Parcial", "Bom", "Excelente"] },
+            { q: "O CI/CD está automatizado para deploy seguro e testes contínuos?", options: ["Não existe", "Manual", "Parcial", "Total"] }
+        ];
+        const questionsCustom = [];
+
+        const scaleDescriptions = {
+            1: 'Inexistente ou Totalmente Manual: O processo não existe ou é executado de forma reativa e 100% manual.',
+            2: 'Inicial ou Ad-hoc: O processo existe, mas é informal, descentralizado e sem padronização.',
+            3: 'Definido e Padronizado: O processo está documentado e padronizado, mas ainda depende de muita execução humana.',
+            4: 'Gerenciado e Medido: O processo é monitorado por métricas, possui ferramentas de apoio e automações parciais.',
+            5: 'Totalmente Automatizado e Otimizado: O processo é totalmente automatizado, monitorado em tempo real e passa por melhoria contínua.'
+        };
 
         function login() {
             document.getElementById('main-nav').classList.remove('hidden');
@@ -145,19 +225,55 @@
         function navigate(view) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.getElementById('view-' + view).classList.add('active');
+            if (view === 'evaluations') renderEvaluationsList();
+        }
+
+        function renderScopeOptions() {
+            const container = document.getElementById('scope-options-container');
+            const allCompanies = [...companies, ...customCompanies];
+            container.innerHTML = allCompanies.map(company => {
+                const labelPrefix = company.type === 'app' ? 'PDTI do Aplicativo' : company.type === 'case' ? 'PDTI do Caso' : 'PDTI da Empresa';
+                return `
+                    <label class="block p-4 border-2 rounded-xl cursor-pointer hover:border-blue-400 transition">
+                        <input type="radio" name="scope-type" value="${company.id}" class="mr-2" ${company.checked ? 'checked' : ''}>
+                        <span class="font-bold text-slate-800">${labelPrefix} (${company.label})</span>
+                        <p class="text-xs text-gray-500 ml-6">${company.subtitle || 'Auditoria personalizada da empresa.'}</p>
+                    </label>
+                `;
+            }).join('');
         }
 
         function openScopeModal() {
+            renderScopeOptions();
             document.getElementById('modal-scope').classList.remove('hidden');
         }
 
+        function addCompany() {
+            const input = document.getElementById('new-company-name');
+            const name = input.value.trim();
+            if (!name) {
+                alert('Informe o nome da nova empresa para auditoria.');
+                return;
+            }
+            const id = `custom-${Date.now()}`;
+            customCompanies.push({ id, label: name, subtitle: 'Empresa adicionada pelo usuário para auditoria.', type: 'custom' });
+            input.value = '';
+            renderScopeOptions();
+        }
+
         function startEvaluation() {
-            const scope = document.querySelector('input[name="scope-type"]:checked').value;
-            activeEval = { 
-                scope: scope, 
-                answers: [], 
+            const selectedId = document.querySelector('input[name="scope-type"]:checked').value;
+            const company = [...companies, ...customCompanies].find(c => c.id === selectedId);
+            if (!company) {
+                alert('Selecione uma empresa ou escopo para continuar.');
+                return;
+            }
+            activeEval = {
+                scope: company.type,
+                answers: [],
                 date: new Date().toLocaleDateString(),
-                company: scope === 'case' ? 'Grupo Horizonte S.A.' : 'App Maturity Corecheck'
+                company: company.label,
+                isCustom: company.type === 'custom'
             };
             currentIdx = 0;
             document.getElementById('modal-scope').classList.add('hidden');
@@ -166,61 +282,311 @@
         }
 
         function renderQuiz() {
-            const qs = activeEval.scope === 'case' ? questionsCase : [{q: "Qualidade do Código: ...", options: ["Pobre", "Médio", "Bom", "Excelente"]}];
-            const q = qs[currentIdx];
+            // For 'case' and custom companies use the 5-domain questionnaire (25 Qs)
+            const isDomainMode = activeEval.scope === 'case' || activeEval.isCustom;
             document.getElementById('quiz-scope-badge').textContent = `ESCOPO: ${activeEval.company.toUpperCase()}`;
-            document.getElementById('quiz-question').textContent = q.q;
-            document.getElementById('quiz-options').innerHTML = q.options.map((o, i) => `
-                <button onclick="selectOpt(${i})" class="w-full text-left p-4 border rounded-xl hover:bg-blue-50 transition">${o}</button>
-            `).join('');
-            document.getElementById('btn-next').textContent = currentIdx === qs.length -1 ? "Gerar PDTI" : "Próximo";
+
+            if (isDomainMode) {
+                const totalQ = domains.reduce((s, d) => s + d.questions.length, 0);
+                const q = (() => {
+                    // currentIdx is global 0..24
+                    const domainIndex = Math.floor(currentIdx / 5);
+                    const qIndex = currentIdx % 5;
+                    return domains[domainIndex].questions[qIndex];
+                })();
+                const domainIndex = Math.floor(currentIdx / 5);
+                document.getElementById('quiz-question').textContent = `${domains[domainIndex].name} — ${q.q}`;
+                // render 1..5 selector
+                document.getElementById('quiz-options').innerHTML = Array.from({length:5}, (_,i) => {
+                    const val = i+1;
+                    const existing = activeEval.answers[currentIdx];
+                    const selected = (existing && ((typeof existing === 'number' && existing === val) || (existing.val && existing.val === val)));
+                    const cls = selected ? 'bg-blue-600 text-white border-2 border-blue-700' : 'bg-white';
+                    return `
+                        <button onclick="selectScore(${val})" class="w-full text-left p-4 border rounded-xl hover:bg-blue-50 transition ${cls}"><span class="font-bold mr-2">${val}</span> ${scaleDescriptions[val]}</button>
+                    `;
+                }).join('');
+                document.getElementById('btn-next').textContent = currentIdx === totalQ -1 ? "Gerar PDTI" : "Próximo";
+            } else {
+                // app mode: simple question set
+                const qs = activeEval.scope === 'app' ? questionsApp : questionsCustom;
+                const q = qs[currentIdx] || qs[0];
+                document.getElementById('quiz-question').textContent = q.q;
+                // render app-mode options and highlight selection
+                const existing = activeEval.answers[currentIdx];
+                document.getElementById('quiz-options').innerHTML = q.options.map((o, i) => {
+                    const selected = existing && ((typeof existing === 'number' && existing === i) || (existing.val === i));
+                    const cls = selected ? 'bg-blue-600 text-white border-2 border-blue-700' : '';
+                    return `
+                        <button onclick="selectOpt(${i})" class="w-full text-left p-4 border rounded-xl hover:bg-blue-50 transition ${cls}">${o}</button>
+                    `;
+                }).join('');
+                document.getElementById('quiz-obs').value = (existing && existing.obs) ? existing.obs : '';
+                document.getElementById('btn-next').textContent = currentIdx === qs.length -1 ? "Gerar PDTI" : "Próximo";
+            }
         }
 
         function selectOpt(i) {
-            activeEval.answers[currentIdx] = { val: i, obs: document.getElementById('quiz-obs').value };
-            quizNext();
+            // save selection and observation for app-mode
+            const obs = document.getElementById('quiz-obs').value || '';
+            activeEval.answers[currentIdx] = { val: i, obs: obs };
+            // visually mark
+            const opts = document.getElementById('quiz-options').children;
+            for (let k=0;k<opts.length;k++) {
+                opts[k].classList.remove('bg-blue-600','text-white','border-2','border-blue-700');
+            }
+            if (opts[i]) opts[i].classList.add('bg-blue-600','text-white','border-2','border-blue-700');
+            // advance after short delay so user sees highlight
+            setTimeout(() => quizNext(), 180);
+        }
+
+        function selectScore(val) {
+            // store numeric score 1..5 for current question in domain mode (with observation if present)
+            const obs = document.getElementById('quiz-obs').value || '';
+            activeEval.answers[currentIdx] = { val: val, obs: obs };
+            // visually mark selection
+            const opts = document.getElementById('quiz-options').children;
+            for (let k=0;k<opts.length;k++) {
+                opts[k].classList.remove('bg-blue-600','text-white','border-2','border-blue-700');
+            }
+            // find the button with that text (simple approach)
+            for (let k=0;k<opts.length;k++) {
+                if (opts[k].textContent.trim().startsWith(String(val))) {
+                    opts[k].classList.add('bg-blue-600','text-white','border-2','border-blue-700');
+                    break;
+                }
+            }
+        }
+
+        function quizPrev() {
+            if (currentIdx > 0) {
+                currentIdx--;
+                renderQuiz();
+            }
         }
 
         function quizNext() {
-            const qs = activeEval.scope === 'case' ? questionsCase : [1];
-            if(currentIdx < qs.length - 1) {
-                currentIdx++;
-                renderQuiz();
-                document.getElementById('quiz-obs').value = "";
+            const isDomainMode = activeEval.scope === 'case' || activeEval.isCustom;
+            if (isDomainMode) {
+                const totalQ = domains.reduce((s, d) => s + d.questions.length, 0);
+                // ensure observation is saved for current question before navigating
+                const obs = document.getElementById('quiz-obs').value || '';
+                const existing = activeEval.answers[currentIdx];
+                if (existing && existing.val) {
+                    existing.obs = obs;
+                    activeEval.answers[currentIdx] = existing;
+                } else if (typeof existing === 'number') {
+                    activeEval.answers[currentIdx] = { val: existing, obs: obs };
+                } else if (!existing) {
+                    // if no selection, store obs with null value
+                    activeEval.answers[currentIdx] = { val: null, obs: obs };
+                }
+                if (currentIdx < totalQ - 1) {
+                    currentIdx++;
+                    renderQuiz();
+                } else {
+                    generateReport();
+                }
             } else {
-                generateReport();
+                const qs = activeEval.scope === 'app' ? questionsApp : questionsCustom;
+                // save obs for app-mode as well
+                const obs = document.getElementById('quiz-obs').value || '';
+                const existing = activeEval.answers[currentIdx];
+                if (existing && existing.val !== undefined) {
+                    existing.obs = obs;
+                    activeEval.answers[currentIdx] = existing;
+                } else if (existing) {
+                    activeEval.answers[currentIdx] = { val: existing, obs: obs };
+                } else {
+                    activeEval.answers[currentIdx] = { val: null, obs: obs };
+                }
+                if (currentIdx < qs.length - 1) {
+                    currentIdx++;
+                    renderQuiz();
+                } else {
+                    generateReport();
+                }
             }
         }
 
         function generateReport() {
             const content = document.getElementById('report-content');
             const isCase = activeEval.scope === 'case';
-            
+            const isApp = activeEval.scope === 'app';
+            const isCustom = activeEval.scope === 'custom';
+
+            // Compute domain averages and global maturity
+            const domainAverages = [];
+            let totalSum = 0;
+            let totalCount = 0;
+            for (let d = 0; d < domains.length; d++) {
+                const qs = domains[d].questions;
+                let sum = 0;
+                for (let q = 0; q < qs.length; q++) {
+                    const idx = d * qs.length + q; // 0..24
+                    const ans = activeEval.answers[idx];
+                    const val = (typeof ans === 'number') ? ans : (ans && ans.val) ? ans.val : 1;
+                    sum += Number(val);
+                }
+                const avg = sum / qs.length;
+                domainAverages.push(Number(avg.toFixed(2)));
+                totalSum += sum;
+                totalCount += qs.length;
+            }
+            const globalAvg = Number((totalSum / totalCount).toFixed(2));
+
             content.innerHTML = `
                 <div class="border-b-4 border-blue-600 pb-4 mb-6">
-                    <h1 class="text-3xl font-black">${isCase ? 'PLANO DIRETOR DE TI - GRUPO HORIZONTE' : 'PLANO DE MELHORIA - CORECHECK'}</h1>
+                    <h1 class="text-3xl font-black">${isCase ? 'PLANO DIRETOR DE TI - GRUPO HORIZONTE' : isApp ? 'PLANO DE MELHORIA - CORECHECK' : 'PLANO DIRETOR DE TI - EMPRESA'}</h1>
                     <p class="text-gray-500 font-bold">OBJETO DE ANÁLISE: ${activeEval.company}</p>
                 </div>
                 <div class="space-y-6">
                     <section>
-                        <h3 class="text-xl font-bold text-blue-700">1. Diagnóstico Situacional</h3>
-                        <p class="mt-2">${isCase ? 'A organização enfrenta desafios críticos de Shadow IT e descentralização do sistema HorizonLog, impactando a prontidão para o IPO 2027.' : 'O sistema necessita de migração para banco de dados persistente e refatoração de UX conforme feedback do mentor.'}</p>
+                        <h3 class="text-xl font-bold text-blue-700">Resumo de Maturidade</h3>
+                        <p class="mt-2">Nível de Maturidade Global: <span class="font-bold">${globalAvg} / 5</span></p>
                     </section>
-                    <section class="bg-slate-50 p-4 rounded-lg">
-                        <h3 class="text-lg font-bold">2. Prioridades Estratégicas (GUT)</h3>
+                    <section class="bg-white p-4 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-bold mb-2">Médias por Domínio</h3>
                         <ul class="list-disc ml-5 mt-2">
-                            ${isCase ? '<li>Segurança LGPD (Dados Motoristas) - Crítico</li><li>Centralização HorizonLog - Alto</li>' : '<li>Persistência de Dados - Crítico</li><li>Refatoração de UI/UX - Médio</li>'}
+                            ${domains.map((d, i) => `<li>${d.name}: <strong>${domainAverages[i]} / 5</strong></li>`).join('')}
                         </ul>
+                        <div class="mt-6">
+                            <canvas id="radarChart" width="400" height="200"></canvas>
+                        </div>
                     </section>
                     <div class="pt-10 text-xs text-gray-400 border-t">
                         Relatório gerado em ${activeEval.date} por Sistema Maturity Corecheck - Auditoria Formal.
                     </div>
                 </div>
             `;
+
+            // Render radar chart
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            if (window._radarChart) window._radarChart.destroy();
+            window._radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: domains.map(d => d.name),
+                    datasets: [{
+                        label: 'Média por Domínio',
+                        data: domainAverages,
+                        backgroundColor: 'rgba(37,99,235,0.2)',
+                        borderColor: 'rgba(37,99,235,1)',
+                        pointBackgroundColor: 'rgba(37,99,235,1)'
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            min: 0,
+                            max: 5,
+                            ticks: { stepSize: 1 }
+                        }
+                    }
+                }
+            });
+
+            // Save to history unless viewing from history
+            if (!window._skipSaveOnGenerate) {
+                saveEvaluation(domainAverages, globalAvg);
+            }
+
             navigate('report');
         }
 
         function logout() { location.reload(); }
+
+        // ----- Persistência em localStorage (Histórico) -----
+        function loadEvaluationsFromStorage() {
+            try {
+                const raw = localStorage.getItem('maturity_evaluations');
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) {
+                console.error('Erro ao ler avaliações:', e);
+                return [];
+            }
+        }
+
+        function saveEvaluationsToStorage(list) {
+            localStorage.setItem('maturity_evaluations', JSON.stringify(list));
+        }
+
+        function saveEvaluation(domainAverages, globalAvg) {
+            const list = loadEvaluationsFromStorage();
+            const snapshot = {
+                id: Date.now(),
+                company: activeEval.company,
+                scope: activeEval.scope,
+                date: activeEval.date || new Date().toLocaleString(),
+                answers: activeEval.answers,
+                domainAverages: domainAverages,
+                globalAvg: globalAvg
+            };
+            list.unshift(snapshot);
+            saveEvaluationsToStorage(list);
+            db.evaluations = list;
+        }
+
+        function renderEvaluationsList() {
+            const list = loadEvaluationsFromStorage();
+            db.evaluations = list;
+            const container = document.getElementById('evaluations-list');
+            if (!container) return;
+            if (list.length === 0) {
+                container.innerHTML = '<div class="text-gray-500">Nenhuma avaliação salva.</div>';
+                return;
+            }
+            container.innerHTML = list.map((it, idx) => `
+                <div class="p-4 border rounded-lg flex justify-between items-center">
+                    <div>
+                        <div class="font-bold">${it.company}</div>
+                        <div class="text-sm text-gray-500">${it.date} — Global: ${it.globalAvg} / 5</div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="viewSavedEvaluation(${idx})" class="px-3 py-2 bg-blue-600 text-white rounded">Ver</button>
+                        <button onclick="deleteSavedEvaluation(${idx})" class="px-3 py-2 bg-red-600 text-white rounded">Apagar</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function viewSavedEvaluation(index) {
+            const list = loadEvaluationsFromStorage();
+            const it = list[index];
+            if (!it) return alert('Avaliação não encontrada.');
+            // Load into activeEval and render report without re-saving
+            activeEval = { scope: it.scope, answers: it.answers, date: it.date, company: it.company };
+            window._skipSaveOnGenerate = true;
+            generateReport();
+            window._skipSaveOnGenerate = false;
+        }
+
+        function deleteSavedEvaluation(index) {
+            const list = loadEvaluationsFromStorage();
+            list.splice(index, 1);
+            saveEvaluationsToStorage(list);
+            renderEvaluationsList();
+        }
+
+        function exportEvaluations() {
+            const list = loadEvaluationsFromStorage();
+            const blob = new Blob([JSON.stringify(list, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `maturity_evaluations_${new Date().toISOString()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
+
+        function clearEvaluations() {
+            if (!confirm('Limpar todo o histórico de avaliações?')) return;
+            localStorage.removeItem('maturity_evaluations');
+            db.evaluations = [];
+            renderEvaluationsList();
+        }
     </script>
 </body>
 </html>
