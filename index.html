@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maturity Corecheck - Enterprise Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .view { display: none; }
+        .view.active { display: block; }
+        .option-card.selected { border-color: #2563eb; background-color: #eff6ff; box-shadow: 0 0 0 2px #bfdbfe; }
+        @media print {
+            .print-hidden { display: none !important; }
+            .print-break-inside-avoid { break-inside: avoid; }
+            body { background: white; }
+        }
+    </style>
+</head>
+<body class="text-gray-800 antialiased h-screen flex flex-col overflow-hidden">
+
+    <!-- NAVBAR -->
+    <nav id="main-nav" class="bg-slate-900 text-white shadow-md hidden flex-shrink-0 print-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="font-bold text-xl text-blue-400">Maturity <span class="text-white">Corecheck</span></span>
+                    <div class="ml-10 flex space-x-4">
+                        <a href="#" onclick="navigate('dashboard')" class="hover:bg-slate-700 px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
+                        <a href="#" onclick="navigate('evaluations')" class="hover:bg-slate-700 px-3 py-2 rounded-md text-sm font-medium">Auditorias</a>
+                    </div>
+                </div>
+                <button onclick="logout()" class="text-gray-300 hover:text-white text-sm">Sair</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-1 overflow-y-auto p-4 sm:p-8">
+        <div class="max-w-5xl mx-auto">
+
+            <!-- VISTA: LOGIN -->
+            <div id="view-login" class="view active max-w-md mx-auto mt-20 bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+                <div class="text-center mb-8">
+                    <h1 class="text-3xl font-bold text-slate-900">Login <span class="text-blue-600">Corecheck</span></h1>
+                    <p class="text-gray-500 mt-2">Acesse a Governança de TI</p>
+                </div>
+                <div class="space-y-4">
+                    <input type="text" id="login-user" class="w-full border rounded-lg p-3" placeholder="Usuário (admin)">
+                    <input type="password" id="login-pass" class="w-full border rounded-lg p-3" placeholder="Senha (123)">
+                    <button onclick="login()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition">Entrar</button>
+                </div>
+            </div>
+
+            <!-- VISTA: DASHBOARD -->
+            <div id="view-dashboard" class="view">
+                <h2 class="text-2xl font-bold mb-6">Painel de Controle</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
+                        <div class="text-sm font-bold text-gray-500">OBJETIVO ATUAL</div>
+                        <div class="text-xl font-bold mt-1">Estabilização Grupo Horizonte S.A. (Rumo ao IPO 2027)</div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-emerald-500">
+                        <div class="text-sm font-bold text-gray-500">STATUS DA GOVERNANÇA</div>
+                        <div id="dash-status" class="text-xl font-bold mt-1">Aguardando Auditoria</div>
+                    </div>
+                </div>
+                <button onclick="openScopeModal()" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-bold shadow-lg hover:bg-blue-700 transition">Iniciar Novo PDTI / Auditoria</button>
+            </div>
+
+            <!-- MODAL DE ESCOPO (TRAVA DE SEGURANÇA SOLICITADA PELO PROFESSOR) -->
+            <div id="modal-scope" class="fixed inset-0 bg-slate-900/60 hidden flex items-center justify-center z-50">
+                <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-lg w-full">
+                    <h3 class="text-2xl font-bold mb-2">Definição de Escopo</h3>
+                    <p class="text-gray-500 mb-6 italic">"Atenção: Valide o objeto analisado antes de prosseguir."</p>
+                    
+                    <div class="space-y-4 mb-8">
+                        <label class="block p-4 border-2 rounded-xl cursor-pointer hover:border-blue-400 transition" id="label-scope-case">
+                            <input type="radio" name="scope-type" value="case" class="mr-2" checked>
+                            <span class="font-bold text-slate-800">PDTI do Caso (Grupo Horizonte S.A.)</span>
+                            <p class="text-xs text-gray-500 ml-6">Foco: HorizonLog, IPO 2027, Mariana, Dr. Alberto, LGPD Motoristas.</p>
+                        </label>
+                        <label class="block p-4 border-2 rounded-xl cursor-pointer hover:border-blue-400 transition" id="label-scope-app">
+                            <input type="radio" name="scope-type" value="app" class="mr-2">
+                            <span class="font-bold text-slate-800">PDTI do Aplicativo (Evolução Maturity Corecheck)</span>
+                            <p class="text-xs text-gray-500 ml-6">Foco: Banco de dados, UX, Backend, CI/CD, Débito Técnico.</p>
+                        </label>
+                    </div>
+
+                    <div class="flex justify-end space-x-3">
+                        <button onclick="document.getElementById('modal-scope').classList.add('hidden')" class="px-4 py-2 text-gray-500">Cancelar</button>
+                        <button onclick="startEvaluation()" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold">Confirmar e Iniciar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VISTA: QUIZ (SIMPLIFICADO PARA O CASE) -->
+            <div id="view-quiz" class="view">
+                <div class="bg-white rounded-2xl shadow-lg p-8 border border-gray-200">
+                    <div class="mb-6">
+                        <div id="quiz-scope-badge" class="inline-block bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded font-bold mb-2">MODO: CLIENTE</div>
+                        <h2 id="quiz-question" class="text-2xl font-bold text-slate-800">Pergunta...?</h2>
+                    </div>
+                    <div id="quiz-options" class="space-y-3 mb-8"></div>
+                    <textarea id="quiz-obs" class="w-full border rounded-lg p-3 mb-6" placeholder="Observações técnicas/evidências..."></textarea>
+                    <div class="flex justify-between">
+                        <button id="btn-prev" onclick="quizPrev()" class="text-gray-500">Anterior</button>
+                        <button id="btn-next" onclick="quizNext()" class="bg-blue-600 text-white px-8 py-2 rounded-lg font-bold">Próximo</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VISTA: RELATÓRIO PDTI -->
+            <div id="view-report" class="view">
+                <div class="flex justify-between items-center mb-6 print-hidden">
+                    <button onclick="navigate('dashboard')" class="text-blue-600">← Voltar</button>
+                    <button onclick="window.print()" class="bg-slate-800 text-white px-4 py-2 rounded">Exportar PDF</button>
+                </div>
+                <div class="bg-white p-10 rounded-xl shadow-lg border border-gray-200" id="report-content">
+                    <!-- Gerado via JS -->
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        let db = { evaluations: [] };
+        let activeEval = null;
+        let currentIdx = 0;
+
+        // Perguntas adaptadas para o Case Grupo Horizonte
+        const questionsCase = [
+            { q: "Governança e IPO: Como está o alinhamento dos sistemas (HorizonLog) com as exigências de auditoria para o IPO 2027?", options: ["Inexistente", "Manual/Planilhas", "Parcialmente Integrado", "Totalmente Auditável"] },
+            { q: "Segurança e LGPD: Como os dados dos motoristas e clientes são protegidos no Data Center atual?", options: ["Sem controle", "Apenas Firewall", "Criptografia Básica", "Zero Trust / Compliance"] },
+            { q: "Shadow IT: Qual o nível de controle sobre aplicações não autorizadas usadas pelas filiais?", options: ["Nenhum (Caos)", "Identificado mas não bloqueado", "Controlado via Proxy", "Bloqueio e Homologação Estrita"] }
+        ];
+
+        function login() {
+            document.getElementById('main-nav').classList.remove('hidden');
+            navigate('dashboard');
+        }
+
+        function navigate(view) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById('view-' + view).classList.add('active');
+        }
+
+        function openScopeModal() {
+            document.getElementById('modal-scope').classList.remove('hidden');
+        }
+
+        function startEvaluation() {
+            const scope = document.querySelector('input[name="scope-type"]:checked').value;
+            activeEval = { 
+                scope: scope, 
+                answers: [], 
+                date: new Date().toLocaleDateString(),
+                company: scope === 'case' ? 'Grupo Horizonte S.A.' : 'App Maturity Corecheck'
+            };
+            currentIdx = 0;
+            document.getElementById('modal-scope').classList.add('hidden');
+            renderQuiz();
+            navigate('quiz');
+        }
+
+        function renderQuiz() {
+            const qs = activeEval.scope === 'case' ? questionsCase : [{q: "Qualidade do Código: ...", options: ["Pobre", "Médio", "Bom", "Excelente"]}];
+            const q = qs[currentIdx];
+            document.getElementById('quiz-scope-badge').textContent = `ESCOPO: ${activeEval.company.toUpperCase()}`;
+            document.getElementById('quiz-question').textContent = q.q;
+            document.getElementById('quiz-options').innerHTML = q.options.map((o, i) => `
+                <button onclick="selectOpt(${i})" class="w-full text-left p-4 border rounded-xl hover:bg-blue-50 transition">${o}</button>
+            `).join('');
+            document.getElementById('btn-next').textContent = currentIdx === qs.length -1 ? "Gerar PDTI" : "Próximo";
+        }
+
+        function selectOpt(i) {
+            activeEval.answers[currentIdx] = { val: i, obs: document.getElementById('quiz-obs').value };
+            quizNext();
+        }
+
+        function quizNext() {
+            const qs = activeEval.scope === 'case' ? questionsCase : [1];
+            if(currentIdx < qs.length - 1) {
+                currentIdx++;
+                renderQuiz();
+                document.getElementById('quiz-obs').value = "";
+            } else {
+                generateReport();
+            }
+        }
+
+        function generateReport() {
+            const content = document.getElementById('report-content');
+            const isCase = activeEval.scope === 'case';
+            
+            content.innerHTML = `
+                <div class="border-b-4 border-blue-600 pb-4 mb-6">
+                    <h1 class="text-3xl font-black">${isCase ? 'PLANO DIRETOR DE TI - GRUPO HORIZONTE' : 'PLANO DE MELHORIA - CORECHECK'}</h1>
+                    <p class="text-gray-500 font-bold">OBJETO DE ANÁLISE: ${activeEval.company}</p>
+                </div>
+                <div class="space-y-6">
+                    <section>
+                        <h3 class="text-xl font-bold text-blue-700">1. Diagnóstico Situacional</h3>
+                        <p class="mt-2">${isCase ? 'A organização enfrenta desafios críticos de Shadow IT e descentralização do sistema HorizonLog, impactando a prontidão para o IPO 2027.' : 'O sistema necessita de migração para banco de dados persistente e refatoração de UX conforme feedback do mentor.'}</p>
+                    </section>
+                    <section class="bg-slate-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-bold">2. Prioridades Estratégicas (GUT)</h3>
+                        <ul class="list-disc ml-5 mt-2">
+                            ${isCase ? '<li>Segurança LGPD (Dados Motoristas) - Crítico</li><li>Centralização HorizonLog - Alto</li>' : '<li>Persistência de Dados - Crítico</li><li>Refatoração de UI/UX - Médio</li>'}
+                        </ul>
+                    </section>
+                    <div class="pt-10 text-xs text-gray-400 border-t">
+                        Relatório gerado em ${activeEval.date} por Sistema Maturity Corecheck - Auditoria Formal.
+                    </div>
+                </div>
+            `;
+            navigate('report');
+        }
+
+        function logout() { location.reload(); }
+    </script>
+</body>
+</html>
