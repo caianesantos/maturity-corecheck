@@ -3,133 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maturity Corecheck - Enterprise Edition</title>
+    <title>Maturity Corecheck - SaaS Enterprise GRC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
         .view { display: none; }
         .view.active { display: block; }
-        .option-card.selected { border-color: #2563eb; background-color: #eff6ff; box-shadow: 0 0 0 2px #bfdbfe; }
         @media print {
             .print-hidden { display: none !important; }
-            .print-break-inside-avoid { break-inside: avoid; }
-            body { background: white; }
+            body { background-color: white; }
+            .report-card { box-shadow: none !important; border: 1px solid #e2e8f0 !important; }
         }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
-<body class="text-gray-800 antialiased h-screen flex flex-col overflow-hidden">
+<body class="text-slate-800 antialiased h-screen flex flex-col overflow-hidden">
 
-    <!-- NAVBAR -->
-    <nav id="main-nav" class="bg-slate-900 text-white shadow-md hidden flex-shrink-0 print-hidden">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- NAVIGATION BAR -->
+    <nav id="main-nav" class="bg-slate-900 text-white shadow-xl hidden flex-shrink-0 print-hidden">
+        <div class="max-w-7xl mx-auto px-6">
             <div class="flex items-center justify-between h-16">
-                <div class="flex items-center">
-                    <span class="font-bold text-xl text-blue-400">Maturity <span class="text-white">Corecheck</span></span>
-                    <div class="ml-10 flex space-x-4">
-                        <a href="#" onclick="navigate('dashboard')" class="hover:bg-slate-700 px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
-                        <a href="#" onclick="navigate('evaluations')" class="hover:bg-slate-700 px-3 py-2 rounded-md text-sm font-medium">Auditorias</a>
+                <div class="flex items-center space-x-3">
+                    <div class="bg-blue-600 p-1.5 rounded-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
                     </div>
+                    <span class="font-bold text-xl tracking-tighter">MATURITY <span class="text-blue-400">CORECHECK</span></span>
                 </div>
-                <button onclick="logout()" class="text-gray-300 hover:text-white text-sm">Sair</button>
+                <div class="flex items-center space-x-6">
+                    <button onclick="navigate('dashboard')" class="text-sm font-medium hover:text-blue-400 transition">Dashboard</button>
+                    <button onclick="logout()" class="bg-slate-800 hover:bg-red-900 px-4 py-2 rounded-lg text-sm transition">Sair</button>
+                </div>
             </div>
         </div>
     </nav>
 
-    <main class="flex-1 overflow-y-auto p-4 sm:p-8">
-        <div class="max-w-5xl mx-auto">
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+        <div class="max-w-6xl mx-auto">
 
             <!-- VISTA: LOGIN -->
-            <div id="view-login" class="view active max-w-md mx-auto mt-20 bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
-                <div class="text-center mb-8">
-                    <h1 class="text-3xl font-bold text-slate-900">Login <span class="text-blue-600">Corecheck</span></h1>
-                    <p class="text-gray-500 mt-2">Acesse a Governança de TI</p>
-                </div>
-                <div class="space-y-4">
-                    <input type="text" id="login-user" class="w-full border rounded-lg p-3" placeholder="Usuário (admin)">
-                    <input type="password" id="login-pass" class="w-full border rounded-lg p-3" placeholder="Senha (123)">
-                    <button onclick="login()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition">Entrar</button>
+            <div id="view-login" class="view active max-w-md mx-auto mt-20">
+                <div class="bg-white p-8 rounded-3xl shadow-2xl border border-slate-200">
+                    <div class="text-center mb-8">
+                        <h1 class="text-3xl font-black text-slate-900">Portal GRC</h1>
+                        <p class="text-slate-500 mt-2">Plataforma de Governança Multiempresa</p>
+                    </div>
+                    <div class="space-y-4">
+                        <input type="text" id="login-user" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Usuário">
+                        <input type="password" id="login-pass" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Senha">
+                        <button onclick="login()" class="w-full bg-slate-900 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition transform hover:scale-[1.01]">Entrar</button>
+                    </div>
                 </div>
             </div>
 
             <!-- VISTA: DASHBOARD -->
             <div id="view-dashboard" class="view">
-                <h2 class="text-2xl font-bold mb-6">Painel de Controle</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
-                        <div class="text-sm font-bold text-gray-500">OBJETIVO ATUAL</div>
-                        <div class="text-xl font-bold mt-1">Estabilização Grupo Horizonte S.A. (Rumo ao IPO 2027)</div>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-emerald-500">
-                        <div class="text-sm font-bold text-gray-500">STATUS DA GOVERNANÇA</div>
-                        <div id="dash-status" class="text-xl font-bold mt-1">Aguardando Auditoria</div>
-                    </div>
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Dashboard de Auditorias</h2>
+                    <button onclick="navigate('setup')" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold shadow-lg transition">Novo Diagnóstico</button>
                 </div>
-                <button onclick="openScopeModal()" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-bold shadow-lg hover:bg-blue-700 transition">Iniciar Novo PDTI / Auditoria</button>
-            </div>
-
-            <!-- MODAL DE ESCOPO (TRAVA DE SEGURANÇA SOLICITADA PELO PROFESSOR) -->
-            <div id="modal-scope" class="fixed inset-0 bg-slate-900/60 hidden flex items-center justify-center z-50">
-                <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-lg w-full">
-                    <h3 class="text-2xl font-bold mb-2">Definição de Escopo</h3>
-                    <p class="text-gray-500 mb-6 italic">"Atenção: Valide o objeto analisado antes de prosseguir."</p>
-                    
-                    <div class="space-y-4 mb-4" id="scope-options-container">
-                        <!-- opções de escopo renderizadas pelo JavaScript -->
-                    </div>
-                    <div class="grid grid-cols-1 gap-4 mb-6">
-                        <input type="text" id="new-company-name" class="w-full border rounded-lg p-3" placeholder="Nova empresa para auditoria">
-                        <button onclick="addCompany()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg transition">Adicionar Empresa</button>
-                    </div>
-                    <div id="custom-company-note" class="text-sm text-gray-500 mb-6">Você pode registrar empresas adicionais para criar novos relatórios de auditoria.</div>
-
-                    <div class="flex justify-end space-x-3">
-                        <button onclick="document.getElementById('modal-scope').classList.add('hidden')" class="px-4 py-2 text-gray-500">Cancelar</button>
-                        <button onclick="startEvaluation()" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold">Confirmar e Iniciar</button>
-                    </div>
+                <div id="history-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Cards de histórico injetados via JS -->
                 </div>
             </div>
 
-            <!-- VISTA: QUIZ (SIMPLIFICADO PARA O CASE) -->
-            <div id="view-quiz" class="view">
-                <div class="bg-white rounded-2xl shadow-lg p-8 border border-gray-200">
-                    <div class="mb-6">
-                        <div id="quiz-scope-badge" class="inline-block bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded font-bold mb-2">MODO: CLIENTE</div>
-                        <h2 id="quiz-question" class="text-2xl font-bold text-slate-800">Pergunta...?</h2>
+            <!-- VISTA: SETUP DA EMPRESA -->
+            <div id="view-setup" class="view max-w-2xl mx-auto">
+                <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
+                    <h2 class="text-2xl font-bold mb-6">Parametrização da Empresa</h2>
+                    <div class="space-y-5">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="col-span-2">
+                                <label class="text-xs font-bold text-slate-500 uppercase ml-1">Nome da Organização</label>
+                                <input type="text" id="setup-name" class="w-full px-4 py-3 bg-slate-50 border rounded-xl" placeholder="Ex: Grupo Industrial Alpha">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 uppercase ml-1">Setor de Atuação</label>
+                                <select id="setup-sector" class="w-full px-4 py-3 bg-slate-50 border rounded-xl">
+                                    <option value="Saúde">Saúde</option>
+                                    <option value="Finanças">Finanças</option>
+                                    <option value="Indústria">Indústria</option>
+                                    <option value="Varejo">Varejo / E-commerce</option>
+                                    <option value="Tecnologia">Tecnologia / SaaS</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 uppercase ml-1">Faturamento Anual (R$)</label>
+                                <input type="number" id="setup-turnover" class="w-full px-4 py-3 bg-slate-50 border rounded-xl" placeholder="10000000">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 uppercase ml-1">Orçamento de TI (R$)</label>
+                                <input type="number" id="setup-budget" class="w-full px-4 py-3 bg-slate-50 border rounded-xl" placeholder="500000">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 uppercase ml-1">Custo Parada / Hora (R$)</label>
+                                <input type="number" id="setup-downtime" class="w-full px-4 py-3 bg-slate-50 border rounded-xl" placeholder="25000">
+                            </div>
+                        </div>
+                        <button onclick="startAudit()" class="w-full bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg mt-4">Iniciar Diagnóstico Estratégico</button>
                     </div>
-                    <div id="quiz-options" class="space-y-3 mb-8"></div>
-                    <textarea id="quiz-obs" class="w-full border rounded-lg p-3 mb-6" placeholder="Observações técnicas/evidências..."></textarea>
+                </div>
+            </div>
+
+            <!-- VISTA: DIAGNÓSTICO (QUIZ) -->
+            <div id="view-quiz" class="view max-w-3xl mx-auto">
+                <div class="bg-white p-8 rounded-3xl shadow-2xl border border-slate-100">
+                    <div class="flex justify-between items-center mb-8">
+                        <span id="quiz-pillar" class="bg-blue-100 text-blue-700 text-xs px-3 py-1 rounded-full font-bold uppercase tracking-widest">Infraestrutura</span>
+                        <div class="text-right">
+                            <p id="quiz-progress-text" class="text-xs font-black text-slate-400 uppercase">Questão 1/20</p>
+                            <div class="w-32 bg-slate-100 h-2 rounded-full mt-1 overflow-hidden">
+                                <div id="quiz-progress-bar" class="bg-blue-600 h-full transition-all duration-500" style="width: 5%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <h3 id="quiz-question" class="text-2xl font-bold text-slate-800 mb-10 leading-tight">Pergunta do diagnóstico...</h3>
+                    <div class="grid grid-cols-1 gap-4 mb-10">
+                        <button onclick="saveAnswer(1)" class="flex items-center justify-between px-6 py-4 border-2 border-slate-100 rounded-2xl hover:border-emerald-500 hover:bg-emerald-50 transition group">
+                            <span class="font-bold text-slate-700 group-hover:text-emerald-700">Sim / Em Conformidade</span>
+                            <div class="w-6 h-6 border-2 rounded-full flex items-center justify-center group-hover:border-emerald-500">
+                                <div class="w-3 h-3 bg-emerald-500 rounded-full scale-0 group-hover:scale-100 transition"></div>
+                            </div>
+                        </button>
+                        <button onclick="saveAnswer(0)" class="flex items-center justify-between px-6 py-4 border-2 border-slate-100 rounded-2xl hover:border-red-500 hover:bg-red-50 transition group">
+                            <span class="font-bold text-slate-700 group-hover:text-red-700">Não / Em Desconformidade</span>
+                            <div class="w-6 h-6 border-2 rounded-full flex items-center justify-center group-hover:border-red-500">
+                                <div class="w-3 h-3 bg-red-500 rounded-full scale-0 group-hover:scale-100 transition"></div>
+                            </div>
+                        </button>
+                    </div>
                     <div class="flex justify-between">
-                        <button id="btn-prev" onclick="quizPrev()" class="text-gray-500">Anterior</button>
-                        <button id="btn-next" onclick="quizNext()" class="bg-blue-600 text-white px-8 py-2 rounded-lg font-bold">Próximo</button>
+                        <button onclick="quizPrev()" id="btn-prev" class="text-slate-400 font-bold hover:text-slate-800 transition">← Anterior</button>
+                        <span class="text-slate-300">|</span>
+                        <button onclick="quizNext()" id="btn-next" class="text-slate-400 font-bold hover:text-blue-600 transition">Pular Questão →</button>
                     </div>
                 </div>
             </div>
 
-            <!-- VISTA: RELATÓRIO PDTI -->
+            <!-- VISTA: RELATÓRIO FINAL -->
             <div id="view-report" class="view">
                 <div class="flex justify-between items-center mb-6 print-hidden">
-                    <button onclick="navigate('dashboard')" class="text-blue-600">← Voltar</button>
-                    <button onclick="window.print()" class="bg-slate-800 text-white px-4 py-2 rounded">Exportar PDF</button>
+                    <button onclick="navigate('dashboard')" class="text-slate-600 font-bold">← Voltar</button>
+                    <button onclick="window.print()" class="bg-slate-900 text-white px-6 py-2 rounded-xl font-bold shadow-lg">Imprimir PDTI (PDF)</button>
                 </div>
-                <div class="bg-white p-10 rounded-xl shadow-lg border border-gray-200" id="report-content">
-                    <!-- Gerado via JS -->
-                </div>
-            </div>
-
-            <!-- VISTA: HISTÓRICO DE AVALIAÇÕES -->
-            <div id="view-evaluations" class="view">
-                <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-2xl font-bold">Histórico de Auditorias</h2>
-                        <div class="text-sm text-gray-500">Armazenado localmente</div>
-                    </div>
-                    <div id="evaluations-list" class="space-y-3"></div>
-                    <div class="mt-6 flex space-x-3">
-                        <button onclick="exportEvaluations()" class="bg-slate-800 text-white px-4 py-2 rounded">Exportar JSON</button>
-                        <button onclick="clearEvaluations()" class="bg-red-600 text-white px-4 py-2 rounded">Limpar Histórico</button>
-                    </div>
+                <div id="report-output" class="bg-white p-12 rounded-none md:rounded-[3rem] shadow-2xl border border-slate-100 min-h-screen">
+                    <!-- Conteúdo gerado dinamicamente -->
                 </div>
             </div>
 
@@ -137,455 +158,317 @@
     </main>
 
     <script>
-        let db = { evaluations: [] };
-        let activeEval = null;
-        let currentIdx = 0;
-        const companies = [
-            { id: 'case', label: 'Grupo Horizonte S.A.', subtitle: 'HorizonLog, IPO 2027, Mariana, Dr. Alberto, LGPD Motoristas.', type: 'case', checked: true },
-            { id: 'app', label: 'App Maturity Corecheck', subtitle: 'Banco de dados, UX, Backend, CI/CD, Débito Técnico.', type: 'app', checked: false }
-        ];
-        const customCompanies = [];
-        // Perguntas adaptadas para o Case Grupo Horizonte
-        const domains = [
-            {
-                id: 'd1',
-                name: 'Gestão de Serviços e Operações',
-                questions: [
-                    { id: 'Q01', q: 'Q01. Existe uma ferramenta formal de ITSM para registro, categorização e triagem de chamados e incidentes, ou o atendimento é feito sob demanda (balcão/mensagens)?' },
-                    { id: 'Q02', q: 'Q02. A empresa possui Acordos de Nível de Serviço (SLAs) definidos, monitorados e acordados explicitamente com as áreas de negócio e clientes?' },
-                    { id: 'Q03', q: 'Q03. Como é realizada a Gestão de Mudanças em sistemas? Existe um ambiente de homologação isolado para testes ou as alterações vão direto para a produção?' },
-                    { id: 'Q04', q: 'Q04. Há um processo estruturado de Gestão de Problemas para identificar, investigar e eliminar a causa raiz de incidentes de TI recorrentes?' },
-                    { id: 'Q05', q: 'Q05. A TI extrai e apresenta relatórios periódicos de disponibilidade (Uptime), Tempo Mestre de Atendimento (MTTR) e satisfação do usuário para a diretoria?' }
-                ]
-            },
-            {
-                id: 'd2',
-                name: 'Infraestrutura e Automação',
-                questions: [
-                    { id: 'Q06', q: 'Q06. A infraestrutura atual (nuvem ou local) possui capacidade de elasticidade automática e resiliência para suportar picos de acessos sem intervenção manual?' },
-                    { id: 'Q07', q: 'Q07. O provisionamento e a manutenção da infraestrutura de servidores são feitos via código (Infraestrutura como Código - IaC) ou de forma manual e artesanal?' },
-                    { id: 'Q08', q: 'Q08. Existe uma Base de Dados de Gerenciamento de Configuração (CMDB) ou um inventário automatizado para mapear o impacto da queda de um ativo sobre os outros?' },
-                    { id: 'Q09', q: 'Q09. Os dados gerados pelas filiais, sistemas satélites ou pátios são integrados em tempo real através de APIs robustas ou dependem de exportações manuais (como arquivos CSV/Excel)?' },
-                    { id: 'Q10', q: 'Q10. O ciclo de vida do hardware e as atualizações de segurança de softwares básicos/bancos de dados são revisados para mitigar a obsolescência tecnológica?' }
-                ]
-            },
-            {
-                id: 'd3',
-                name: 'Segurança da Informação e Risco',
-                questions: [
-                    { id: 'Q11', q: 'Q11. O Múltiplo Fator de Autenticação (MFA) e políticas de senhas complexas são obrigatórios para todas as contas, especialmente as de privilégio administrativo?' },
-                    { id: 'Q12', q: 'Q12. Existe uma rotina automatizada de backups de dados e, criticamente, são realizados testes periódicos de restauração (Restore) para validar as mídias?' },
-                    { id: 'Q13', q: 'Q13. A empresa possui um Plano de Recuperação de Desastres (DRP) formalizado e um site de contingência operando para garantir a continuidade em caso de desastre?' },
-                    { id: 'Q14', q: 'Q14. Os logs de auditoria dos sistemas e bancos de dados estão ativados por padrão e são armazenados centralizadamente de forma imutável e protegida?' },
-                    { id: 'Q15', q: 'Q15. Os acessos remotos aos servidores e bases de dados da empresa exigem obrigatoriamente redes privadas virtuais criptografadas (VPN) e autenticação forte?' }
-                ]
-            },
-            {
-                id: 'd4',
-                name: 'Estratégia, Negócios e Governança',
-                questions: [
-                    { id: 'Q16', q: 'Q16. O Planejamento Estratégico de TI (PDTI) está diretamente alinhado às metas financeiras e de expansão de longo prazo da organização?' },
-                    { id: 'Q17', q: 'Q17. A TI possui assento ou representação direta nos comitês executivos ou no Conselho de Administração para tomadas de decisão sobre investimentos?' },
-                    { id: 'Q18', q: 'Q18. Os investimentos em tecnologia são classificados estrategicamente de forma clara entre CAPEX (inovação/ativos) e OPEX (manutenção/operação)?' },
-                    { id: 'Q19', q: 'Q19. Existe uma Matriz de Riscos Corporativos atualizada que inclui explicitamente riscos cibernéticos, perda de dados e interrupção de processos de negócio?' },
-                    { id: 'Q20', q: 'Q20. A governança garante a segregação de funções sistêmicas (ex: impedir que o mesmo usuário cadastre fornecedores e aprove pagamentos no sistema)?' }
-                ]
-            },
-            {
-                id: 'd5',
-                name: 'Cultura, Pessoal e Inovação',
-                questions: [
-                    { id: 'Q21', q: 'Q21. Há políticas e ferramentas ativas para identificar, monitorar e mitigar o uso de Shadow IT (sistemas contratados por fora pelas áreas sem o aval da TI)?' },
-                    { id: 'Q22', q: 'Q22. A liderança realiza rotineiramente treinamentos e simulações de conscientização em cibersegurança (como engenharia social e phishing) para os usuários?' },
-                    { id: 'Q23', q: 'Q23. Existe um plano formal de retenção de talentos técnicos e mitigação do risco de dependência exclusiva de "pessoas-chave" (heróis da TI)?' },
-                    { id: 'Q24', q: 'Q24. O canal de denúncias éticas da empresa é estruturado de modo que garanta total anonimato e independência de investigação, inclusive para a alta liderança?' },
-                    { id: 'Q25', q: 'Q25. A empresa possui um inventário de dados pessoais (RoPA) estruturado e políticas claras de privacidade em conformidade real e auditável com a LGPD?' }
-                ]
-            }
-        ];
-        const questionsApp = [
-            { q: "O app Corecheck possui persistência e controle de versões adequados para auditoria?", options: ["Não", "Parcial", "Bom", "Excelente"] },
-            { q: "O CI/CD está automatizado para deploy seguro e testes contínuos?", options: ["Não existe", "Manual", "Parcial", "Total"] }
-        ];
-        const questionsCustom = [];
+        // --- MOTOR DE DADOS E LOGICA ---
+        const QUESTIONS = [
+            { id: 1, pillar: 'Infraestrutura', text: 'Possui redundância de conectividade e hardware para serviços críticos?', gut: [5, 4, 4], origin: 'Interno' },
+            { id: 2, pillar: 'Infraestrutura', text: 'Os backups são realizados em nuvem ou off-site com testes periódicos de restore?', gut: [5, 5, 5], origin: 'Interno' },
+            { id: 3, pillar: 'Infraestrutura', text: 'A sala de servidores/data center possui controle de acesso e climatização redundante?', gut: [4, 3, 4], origin: 'Interno' },
+            { id: 4, pillar: 'Infraestrutura', text: 'Utiliza ferramentas de monitoramento proativo (NMS) com alertas de downtime?', gut: [3, 4, 3], origin: 'Interno' },
+            { id: 5, pillar: 'Infraestrutura', text: 'Possui um plano de Disaster Recovery (DRP) testado nos últimos 12 meses?', gut: [5, 4, 5], origin: 'Interno' },
+            
+            { id: 6, pillar: 'Segurança', text: 'Utiliza Múltiplo Fator de Autenticação (MFA) para acessos administrativos?', gut: [5, 5, 4], origin: 'Externo' },
+            { id: 7, pillar: 'Segurança', text: 'Há uma política formal de gestão de senhas e bloqueio de contas inativas?', gut: [4, 4, 4], origin: 'Interno' },
+            { id: 8, pillar: 'Segurança', text: 'Possui licenciamento oficial e atualizado para todos os softwares core?', gut: [5, 3, 5], origin: 'Externo' },
+            { id: 9, pillar: 'Segurança', text: 'Realiza auditorias de permissões e perfis de acesso trimestralmente?', gut: [4, 4, 3], origin: 'Interno' },
+            { id: 10, pillar: 'Segurança', text: 'Utiliza criptografia para dados sensíveis em repouso e em trânsito?', gut: [5, 4, 5], origin: 'Externo' },
 
-        const scaleDescriptions = {
-            1: 'Inexistente ou Totalmente Manual: O processo não existe ou é executado de forma reativa e 100% manual.',
-            2: 'Inicial ou Ad-hoc: O processo existe, mas é informal, descentralizado e sem padronização.',
-            3: 'Definido e Padronizado: O processo está documentado e padronizado, mas ainda depende de muita execução humana.',
-            4: 'Gerenciado e Medido: O processo é monitorado por métricas, possui ferramentas de apoio e automações parciais.',
-            5: 'Totalmente Automatizado e Otimizado: O processo é totalmente automatizado, monitorado em tempo real e passa por melhoria contínua.'
+            { id: 11, pillar: 'Processos', text: 'Utiliza ferramenta formal de ITSM/Chamados para gestão de demandas?', gut: [3, 4, 4], origin: 'Interno' },
+            { id: 12, pillar: 'Processos', text: 'Existe um catálogo de serviços com SLAs definidos com as áreas de negócio?', gut: [3, 3, 3], origin: 'Interno' },
+            { id: 13, pillar: 'Processos', text: 'Há processos formais de Gestão de Mudanças para evitar impactos em produção?', gut: [4, 4, 4], origin: 'Interno' },
+            { id: 14, pillar: 'Processos', text: 'Realiza reuniões mensais de indicadores (KPIs) com a alta gestão?', gut: [3, 3, 4], origin: 'Interno' },
+            { id: 15, pillar: 'Processos', text: 'Possui fluxos de aprovação automatizados para requisições de TI?', gut: [2, 3, 3], origin: 'Interno' },
+
+            { id: 16, pillar: 'Compliance', text: 'Possui inventário de dados pessoais (RoPA) em conformidade com a LGPD?', gut: [5, 5, 5], origin: 'Externo' },
+            { id: 17, pillar: 'Compliance', text: 'Há um DPO (Encarregado de Dados) nomeado e atuante na organização?', gut: [4, 4, 5], origin: 'Externo' },
+            { id: 18, pillar: 'Compliance', text: 'Possui logs de auditoria imutáveis para transações financeiras/críticas?', gut: [5, 4, 4], origin: 'Externo' },
+            { id: 19, pillar: 'Compliance', text: 'Realiza gestão de riscos de fornecedores de TI (Vendor Risk Management)?', gut: [4, 3, 4], origin: 'Externo' },
+            { id: 20, pillar: 'Compliance', text: 'A TI possui assento ou reporte direto ao Conselho/Diretoria Executiva?', gut: [4, 3, 5], origin: 'Interno' }
+        ];
+
+        let state = {
+            user: null,
+            evaluations: JSON.parse(localStorage.getItem('mc_saas_evals') || '[]'),
+            activeEval: null,
+            currentIdx: 0
         };
 
+        // --- AUTH & NAVIGATION ---
         function login() {
-            document.getElementById('main-nav').classList.remove('hidden');
-            navigate('dashboard');
-        }
-
-        function navigate(view) {
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.getElementById('view-' + view).classList.add('active');
-            if (view === 'evaluations') renderEvaluationsList();
-        }
-
-        function renderScopeOptions() {
-            const container = document.getElementById('scope-options-container');
-            const allCompanies = [...companies, ...customCompanies];
-            container.innerHTML = allCompanies.map(company => {
-                const labelPrefix = company.type === 'app' ? 'PDTI do Aplicativo' : company.type === 'case' ? 'PDTI do Caso' : 'PDTI da Empresa';
-                return `
-                    <label class="block p-4 border-2 rounded-xl cursor-pointer hover:border-blue-400 transition">
-                        <input type="radio" name="scope-type" value="${company.id}" class="mr-2" ${company.checked ? 'checked' : ''}>
-                        <span class="font-bold text-slate-800">${labelPrefix} (${company.label})</span>
-                        <p class="text-xs text-gray-500 ml-6">${company.subtitle || 'Auditoria personalizada da empresa.'}</p>
-                    </label>
-                `;
-            }).join('');
-        }
-
-        function openScopeModal() {
-            renderScopeOptions();
-            document.getElementById('modal-scope').classList.remove('hidden');
-        }
-
-        function addCompany() {
-            const input = document.getElementById('new-company-name');
-            const name = input.value.trim();
-            if (!name) {
-                alert('Informe o nome da nova empresa para auditoria.');
-                return;
+            const user = document.getElementById('login-user').value;
+            if(user) {
+                state.user = user;
+                document.getElementById('main-nav').classList.remove('hidden');
+                navigate('dashboard');
+                renderHistory();
             }
-            const id = `custom-${Date.now()}`;
-            customCompanies.push({ id, label: name, subtitle: 'Empresa adicionada pelo usuário para auditoria.', type: 'custom' });
-            input.value = '';
-            renderScopeOptions();
-        }
-
-        function startEvaluation() {
-            const selectedId = document.querySelector('input[name="scope-type"]:checked').value;
-            const company = [...companies, ...customCompanies].find(c => c.id === selectedId);
-            if (!company) {
-                alert('Selecione uma empresa ou escopo para continuar.');
-                return;
-            }
-            activeEval = {
-                scope: company.type,
-                answers: [],
-                date: new Date().toLocaleDateString(),
-                company: company.label,
-                isCustom: company.type === 'custom'
-            };
-            currentIdx = 0;
-            document.getElementById('modal-scope').classList.add('hidden');
-            renderQuiz();
-            navigate('quiz');
-        }
-
-        function renderQuiz() {
-            // For 'case' and custom companies use the 5-domain questionnaire (25 Qs)
-            const isDomainMode = activeEval.scope === 'case' || activeEval.isCustom;
-            document.getElementById('quiz-scope-badge').textContent = `ESCOPO: ${activeEval.company.toUpperCase()}`;
-
-            if (isDomainMode) {
-                const totalQ = domains.reduce((s, d) => s + d.questions.length, 0);
-                const q = (() => {
-                    // currentIdx is global 0..24
-                    const domainIndex = Math.floor(currentIdx / 5);
-                    const qIndex = currentIdx % 5;
-                    return domains[domainIndex].questions[qIndex];
-                })();
-                const domainIndex = Math.floor(currentIdx / 5);
-                document.getElementById('quiz-question').textContent = `${domains[domainIndex].name} — ${q.q}`;
-                // render 1..5 selector
-                document.getElementById('quiz-options').innerHTML = Array.from({length:5}, (_,i) => {
-                    const val = i+1;
-                    const existing = activeEval.answers[currentIdx];
-                    const selected = (existing && ((typeof existing === 'number' && existing === val) || (existing.val && existing.val === val)));
-                    const cls = selected ? 'bg-blue-600 text-white border-2 border-blue-700' : 'bg-white';
-                    return `
-                        <button onclick="selectScore(${val})" class="w-full text-left p-4 border rounded-xl hover:bg-blue-50 transition ${cls}"><span class="font-bold mr-2">${val}</span> ${scaleDescriptions[val]}</button>
-                    `;
-                }).join('');
-                document.getElementById('btn-next').textContent = currentIdx === totalQ -1 ? "Gerar PDTI" : "Próximo";
-            } else {
-                // app mode: simple question set
-                const qs = activeEval.scope === 'app' ? questionsApp : questionsCustom;
-                const q = qs[currentIdx] || qs[0];
-                document.getElementById('quiz-question').textContent = q.q;
-                // render app-mode options and highlight selection
-                const existing = activeEval.answers[currentIdx];
-                document.getElementById('quiz-options').innerHTML = q.options.map((o, i) => {
-                    const selected = existing && ((typeof existing === 'number' && existing === i) || (existing.val === i));
-                    const cls = selected ? 'bg-blue-600 text-white border-2 border-blue-700' : '';
-                    return `
-                        <button onclick="selectOpt(${i})" class="w-full text-left p-4 border rounded-xl hover:bg-blue-50 transition ${cls}">${o}</button>
-                    `;
-                }).join('');
-                document.getElementById('quiz-obs').value = (existing && existing.obs) ? existing.obs : '';
-                document.getElementById('btn-next').textContent = currentIdx === qs.length -1 ? "Gerar PDTI" : "Próximo";
-            }
-        }
-
-        function selectOpt(i) {
-            // save selection and observation for app-mode
-            const obs = document.getElementById('quiz-obs').value || '';
-            activeEval.answers[currentIdx] = { val: i, obs: obs };
-            // visually mark
-            const opts = document.getElementById('quiz-options').children;
-            for (let k=0;k<opts.length;k++) {
-                opts[k].classList.remove('bg-blue-600','text-white','border-2','border-blue-700');
-            }
-            if (opts[i]) opts[i].classList.add('bg-blue-600','text-white','border-2','border-blue-700');
-            // advance after short delay so user sees highlight
-            setTimeout(() => quizNext(), 180);
-        }
-
-        function selectScore(val) {
-            // store numeric score 1..5 for current question in domain mode (with observation if present)
-            const obs = document.getElementById('quiz-obs').value || '';
-            activeEval.answers[currentIdx] = { val: val, obs: obs };
-            // visually mark selection
-            const opts = document.getElementById('quiz-options').children;
-            for (let k=0;k<opts.length;k++) {
-                opts[k].classList.remove('bg-blue-600','text-white','border-2','border-blue-700');
-            }
-            // find the button with that text (simple approach)
-            for (let k=0;k<opts.length;k++) {
-                if (opts[k].textContent.trim().startsWith(String(val))) {
-                    opts[k].classList.add('bg-blue-600','text-white','border-2','border-blue-700');
-                    break;
-                }
-            }
-        }
-
-        function quizPrev() {
-            if (currentIdx > 0) {
-                currentIdx--;
-                renderQuiz();
-            }
-        }
-
-        function quizNext() {
-            const isDomainMode = activeEval.scope === 'case' || activeEval.isCustom;
-            if (isDomainMode) {
-                const totalQ = domains.reduce((s, d) => s + d.questions.length, 0);
-                // ensure observation is saved for current question before navigating
-                const obs = document.getElementById('quiz-obs').value || '';
-                const existing = activeEval.answers[currentIdx];
-                if (existing && existing.val) {
-                    existing.obs = obs;
-                    activeEval.answers[currentIdx] = existing;
-                } else if (typeof existing === 'number') {
-                    activeEval.answers[currentIdx] = { val: existing, obs: obs };
-                } else if (!existing) {
-                    // if no selection, store obs with null value
-                    activeEval.answers[currentIdx] = { val: null, obs: obs };
-                }
-                if (currentIdx < totalQ - 1) {
-                    currentIdx++;
-                    renderQuiz();
-                } else {
-                    generateReport();
-                }
-            } else {
-                const qs = activeEval.scope === 'app' ? questionsApp : questionsCustom;
-                // save obs for app-mode as well
-                const obs = document.getElementById('quiz-obs').value || '';
-                const existing = activeEval.answers[currentIdx];
-                if (existing && existing.val !== undefined) {
-                    existing.obs = obs;
-                    activeEval.answers[currentIdx] = existing;
-                } else if (existing) {
-                    activeEval.answers[currentIdx] = { val: existing, obs: obs };
-                } else {
-                    activeEval.answers[currentIdx] = { val: null, obs: obs };
-                }
-                if (currentIdx < qs.length - 1) {
-                    currentIdx++;
-                    renderQuiz();
-                } else {
-                    generateReport();
-                }
-            }
-        }
-
-        function generateReport() {
-            const content = document.getElementById('report-content');
-            const isCase = activeEval.scope === 'case';
-            const isApp = activeEval.scope === 'app';
-            const isCustom = activeEval.scope === 'custom';
-
-            // Compute domain averages and global maturity
-            const domainAverages = [];
-            let totalSum = 0;
-            let totalCount = 0;
-            for (let d = 0; d < domains.length; d++) {
-                const qs = domains[d].questions;
-                let sum = 0;
-                for (let q = 0; q < qs.length; q++) {
-                    const idx = d * qs.length + q; // 0..24
-                    const ans = activeEval.answers[idx];
-                    const val = (typeof ans === 'number') ? ans : (ans && ans.val) ? ans.val : 1;
-                    sum += Number(val);
-                }
-                const avg = sum / qs.length;
-                domainAverages.push(Number(avg.toFixed(2)));
-                totalSum += sum;
-                totalCount += qs.length;
-            }
-            const globalAvg = Number((totalSum / totalCount).toFixed(2));
-
-            content.innerHTML = `
-                <div class="border-b-4 border-blue-600 pb-4 mb-6">
-                    <h1 class="text-3xl font-black">${isCase ? 'PLANO DIRETOR DE TI - GRUPO HORIZONTE' : isApp ? 'PLANO DE MELHORIA - CORECHECK' : 'PLANO DIRETOR DE TI - EMPRESA'}</h1>
-                    <p class="text-gray-500 font-bold">OBJETO DE ANÁLISE: ${activeEval.company}</p>
-                </div>
-                <div class="space-y-6">
-                    <section>
-                        <h3 class="text-xl font-bold text-blue-700">Resumo de Maturidade</h3>
-                        <p class="mt-2">Nível de Maturidade Global: <span class="font-bold">${globalAvg} / 5</span></p>
-                    </section>
-                    <section class="bg-white p-4 rounded-lg shadow-sm">
-                        <h3 class="text-lg font-bold mb-2">Médias por Domínio</h3>
-                        <ul class="list-disc ml-5 mt-2">
-                            ${domains.map((d, i) => `<li>${d.name}: <strong>${domainAverages[i]} / 5</strong></li>`).join('')}
-                        </ul>
-                        <div class="mt-6">
-                            <canvas id="radarChart" width="400" height="200"></canvas>
-                        </div>
-                    </section>
-                    <div class="pt-10 text-xs text-gray-400 border-t">
-                        Relatório gerado em ${activeEval.date} por Sistema Maturity Corecheck - Auditoria Formal.
-                    </div>
-                </div>
-            `;
-
-            // Render radar chart
-            const ctx = document.getElementById('radarChart').getContext('2d');
-            if (window._radarChart) window._radarChart.destroy();
-            window._radarChart = new Chart(ctx, {
-                type: 'radar',
-                data: {
-                    labels: domains.map(d => d.name),
-                    datasets: [{
-                        label: 'Média por Domínio',
-                        data: domainAverages,
-                        backgroundColor: 'rgba(37,99,235,0.2)',
-                        borderColor: 'rgba(37,99,235,1)',
-                        pointBackgroundColor: 'rgba(37,99,235,1)'
-                    }]
-                },
-                options: {
-                    scales: {
-                        r: {
-                            min: 0,
-                            max: 5,
-                            ticks: { stepSize: 1 }
-                        }
-                    }
-                }
-            });
-
-            // Save to history unless viewing from history
-            if (!window._skipSaveOnGenerate) {
-                saveEvaluation(domainAverages, globalAvg);
-            }
-
-            navigate('report');
         }
 
         function logout() { location.reload(); }
 
-        // ----- Persistência em localStorage (Histórico) -----
-        function loadEvaluationsFromStorage() {
-            try {
-                const raw = localStorage.getItem('maturity_evaluations');
-                return raw ? JSON.parse(raw) : [];
-            } catch (e) {
-                console.error('Erro ao ler avaliações:', e);
-                return [];
-            }
+        function navigate(view) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById('view-' + view).classList.add('active');
         }
 
-        function saveEvaluationsToStorage(list) {
-            localStorage.setItem('maturity_evaluations', JSON.stringify(list));
-        }
-
-        function saveEvaluation(domainAverages, globalAvg) {
-            const list = loadEvaluationsFromStorage();
-            const snapshot = {
-                id: Date.now(),
-                company: activeEval.company,
-                scope: activeEval.scope,
-                date: activeEval.date || new Date().toLocaleString(),
-                answers: activeEval.answers,
-                domainAverages: domainAverages,
-                globalAvg: globalAvg
+        // --- AUDIT FLOW ---
+        function startAudit() {
+            const companyData = {
+                name: document.getElementById('setup-name').value || 'Empresa Genérica',
+                sector: document.getElementById('setup-sector').value,
+                turnover: parseFloat(document.getElementById('setup-turnover').value) || 0,
+                budget: parseFloat(document.getElementById('setup-budget').value) || 0,
+                downtime: parseFloat(document.getElementById('setup-downtime').value) || 0
             };
-            list.unshift(snapshot);
-            saveEvaluationsToStorage(list);
-            db.evaluations = list;
+
+            state.activeEval = {
+                id: Date.now(),
+                companyData,
+                answers: {},
+                date: new Date().toLocaleString()
+            };
+            state.currentIdx = 0;
+            navigate('quiz');
+            renderQuestion();
         }
 
-        function renderEvaluationsList() {
-            const list = loadEvaluationsFromStorage();
-            db.evaluations = list;
-            const container = document.getElementById('evaluations-list');
-            if (!container) return;
-            if (list.length === 0) {
-                container.innerHTML = '<div class="text-gray-500">Nenhuma avaliação salva.</div>';
-                return;
+        function renderQuestion() {
+            const q = QUESTIONS[state.currentIdx];
+            const progress = ((state.currentIdx + 1) / QUESTIONS.length) * 100;
+            
+            document.getElementById('quiz-pillar').textContent = q.pillar;
+            document.getElementById('quiz-question').textContent = q.text;
+            document.getElementById('quiz-progress-text').textContent = `Questão ${state.currentIdx + 1}/${QUESTIONS.length}`;
+            document.getElementById('quiz-progress-bar').style.width = `${progress}%`;
+            document.getElementById('btn-prev').style.opacity = state.currentIdx === 0 ? 0 : 1;
+        }
+
+        function saveAnswer(val) {
+            state.activeEval.answers[QUESTIONS[state.currentIdx].id] = val;
+            if(state.currentIdx < QUESTIONS.length - 1) {
+                state.currentIdx++;
+                renderQuestion();
+            } else {
+                generateReport();
             }
-            container.innerHTML = list.map((it, idx) => `
-                <div class="p-4 border rounded-lg flex justify-between items-center">
+        }
+
+        function quizPrev() { if(state.currentIdx > 0) { state.currentIdx--; renderQuestion(); } }
+        function quizNext() { if(state.currentIdx < QUESTIONS.length - 1) { state.currentIdx++; renderQuestion(); } }
+
+        // --- REPORT ENGINE (MATEMATICA & GRC) ---
+        function generateReport() {
+            const ev = state.activeEval;
+            const data = ev.companyData;
+            const answers = ev.answers;
+
+            // 1. Calculo de Scores por Dimensão
+            const pillars = ['Infraestrutura', 'Segurança', 'Processos', 'Compliance'];
+            const scores = {};
+            pillars.forEach(p => {
+                const pQs = QUESTIONS.filter(q => q.pillar === p);
+                const conform = pQs.filter(q => answers[q.id] === 1).length;
+                scores[p] = (conform / pQs.length) * 100;
+            });
+
+            // 2. Matriz GUT e Riscos
+            const failures = QUESTIONS.filter(q => answers[q.id] === 0);
+            const gutList = failures.map(q => ({
+                text: q.text,
+                pillar: q.pillar,
+                g: q.gut[0], u: q.gut[1], t: q.gut[2],
+                score: q.gut[0] * q.gut[1] * q.gut[2],
+                origin: q.origin
+            })).sort((a, b) => b.score - a.score);
+
+            // Classificacao de severidade GUT (Score = G x U x T, faixa 1 a 125)
+            const gutClass = (s) => s >= 100 ? 'Crítico' : (s >= 60 ? 'Alto' : (s >= 30 ? 'Médio' : 'Baixo'));
+            const LIMIAR_SWOT = 60; // riscos com Score >= 60 (Alto/Crítico) alimentam a SWOT
+
+            const highRisks = gutList.filter(r => r.score >= LIMIAR_SWOT);
+
+            // SWOT completa e rastreavel: 2x2 (Interno/Externo) x (Positivo/Negativo)
+            // Positivos derivam das questoes em conformidade (resposta = Sim)
+            const conforming = QUESTIONS.filter(q => answers[q.id] === 1).map(q => ({ text: q.text, origin: q.origin }));
+            const strengths = conforming.filter(r => r.origin === 'Interno');   // Forças (Interno +)
+            const opportunities = conforming.filter(r => r.origin === 'Externo'); // Oportunidades (Externo +)
+            const weaknesses = highRisks.filter(r => r.origin === 'Interno');     // Fraquezas (Interno -)
+            const threats = highRisks.filter(r => r.origin === 'Externo');        // Ameaças (Externo -)
+
+            // 3. Calculo Orçamentário (ROI/Benchmark)
+            const budgetPercent = (data.budget / data.turnover) * 100;
+            const marketBench = data.sector === 'Finanças' ? 7 : (data.sector === 'Saúde' ? 5 : 3);
+            const budgetStatus = budgetPercent < marketBench ? 'Abaixo do mercado' : 'Alinhado ao mercado';
+
+            let html = `
+                <div class="border-b-8 border-slate-900 pb-8 mb-12 flex justify-between items-end">
                     <div>
-                        <div class="font-bold">${it.company}</div>
-                        <div class="text-sm text-gray-500">${it.date} — Global: ${it.globalAvg} / 5</div>
+                        <h1 class="text-4xl font-black text-slate-900 tracking-tighter uppercase">Plano Diretor de TI (PDTI)</h1>
+                        <p class="text-blue-600 font-bold text-xl">${data.name} | <span class="text-slate-400 font-medium">${data.sector}</span></p>
                     </div>
-                    <div class="flex space-x-2">
-                        <button onclick="viewSavedEvaluation(${idx})" class="px-3 py-2 bg-blue-600 text-white rounded">Ver</button>
-                        <button onclick="deleteSavedEvaluation(${idx})" class="px-3 py-2 bg-red-600 text-white rounded">Apagar</button>
+                    <div class="text-right">
+                        <div class="bg-slate-900 text-white p-4 rounded-2xl">
+                            <p class="text-[10px] font-bold uppercase opacity-60">Maturidade Global</p>
+                            <p class="text-4xl font-black">${(Object.values(scores).reduce((a,b)=>a+b,0)/4/20).toFixed(1)} <span class="text-sm opacity-40">/ 5.0</span></p>
+                        </div>
                     </div>
                 </div>
-            `).join('');
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+                    <section>
+                        <h2 class="text-xl font-black border-l-4 border-blue-600 pl-4 mb-3 uppercase">1. Diagnóstico Situacional</h2>
+                        <p class="text-[11px] text-slate-500 mb-4">Score por dimensão = (questões em conformidade ÷ total de questões da dimensão) × 100. Maturidade global = média dos quatro pilares, convertida para escala 0–5,0.</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            ${Object.entries(scores).map(([p, s]) => `
+                                <div class="bg-slate-50 p-4 rounded-2xl border">
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase">${p}</p>
+                                    <p class="text-2xl font-black ${s < 40 ? 'text-red-600' : 'text-slate-800'}">${s.toFixed(0)}%</p>
+                                    <div class="w-full bg-slate-200 h-1 rounded-full mt-2"><div class="bg-blue-600 h-full" style="width:${s}%"></div></div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <p class="mt-6 text-slate-600 text-sm leading-relaxed">
+                            A organização opera com um nível de investimento em TI de <strong>${budgetPercent.toFixed(1)}%</strong> do faturamento, o que é classificado como <strong>${budgetStatus}</strong> para o setor de ${data.sector}.
+                            A maior vulnerabilidade detectada encontra-se no pilar de <strong>${Object.entries(scores).sort((a,b)=>a[1]-b[1])[0][0]}</strong>.
+                        </p>
+                    </section>
+
+                    <section>
+                        <h2 class="text-xl font-black border-l-4 border-blue-600 pl-4 mb-6 uppercase">2. Inventário e Ativos Críticos</h2>
+                        <table class="w-full text-left text-sm">
+                            <thead class="border-b-2 border-slate-900">
+                                <tr><th class="py-2">Dimensão</th><th>Estado</th><th>Impacto Financeiro</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="py-2 font-bold">Operações</td><td>${scores['Infraestrutura'] > 50 ? 'Estável' : 'Crítico'}</td><td>R$ ${data.downtime.toLocaleString()}/hora</td></tr>
+                                <tr><td class="py-2 font-bold">Dados</td><td>${scores['Segurança'] > 50 ? 'Protegido' : 'Vulnerável'}</td><td>Risco Reputacional</td></tr>
+                                <tr><td class="py-2 font-bold">Processos</td><td>${scores['Processos'] > 50 ? 'Ágil' : 'Manual'}</td><td>Perda de Produtividade</td></tr>
+                            </tbody>
+                        </table>
+                    </section>
+                </div>
+
+                <div class="mb-16">
+                    <h2 class="text-xl font-black border-l-4 border-blue-600 pl-4 mb-3 uppercase">5. Priorização de Demandas (Matriz GUT)</h2>
+                    <p class="text-xs text-slate-500 mb-2 pl-4">
+                        <strong>Score = G × U × T</strong> (Gravidade × Urgência × Tendência) — faixa de 1 a 125.
+                        Classificação: <span class="font-bold">Baixo</span> &lt; 30 · <span class="font-bold">Médio</span> 30–59 · <span class="font-bold text-orange-600">Alto</span> 60–99 · <span class="font-bold text-red-600">Crítico</span> ≥ 100.
+                        Riscos com Score ≥ ${LIMIAR_SWOT} (Alto/Crítico) são promovidos automaticamente à matriz SWOT.
+                    </p>
+                    <p class="text-[11px] text-slate-400 mb-6 pl-4">${gutList.length} vulnerabilidade(s) identificada(s) · ${highRisks.length} acima do limiar de severidade.</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-900 text-white text-[10px] uppercase">
+                                <tr><th class="p-4">Vulnerabilidade Identificada</th><th class="p-4 text-center">Origem</th><th class="p-4 text-center">G</th><th class="p-4 text-center">U</th><th class="p-4 text-center">T</th><th class="p-4 text-center">Score</th><th class="p-4 text-center">Classificação</th></tr>
+                            </thead>
+                            <tbody class="divide-y text-sm">
+                                ${gutList.map(it => `
+                                    <tr>
+                                        <td class="p-4 font-medium">${it.text}</td>
+                                        <td class="p-4 text-center text-[11px] text-slate-500">${it.origin}</td>
+                                        <td class="p-4 text-center">${it.g}</td>
+                                        <td class="p-4 text-center">${it.u}</td>
+                                        <td class="p-4 text-center">${it.t}</td>
+                                        <td class="p-4 text-center font-black ${it.score >= 100 ? 'text-red-600' : (it.score >= 60 ? 'text-orange-600' : '')}">${it.score}</td>
+                                        <td class="p-4 text-center text-[11px] font-bold ${it.score >= 100 ? 'text-red-600' : (it.score >= 60 ? 'text-orange-600' : 'text-slate-500')}">${gutClass(it.score)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+                    <section>
+                        <h2 class="text-xl font-black border-l-4 border-blue-600 pl-4 mb-3 uppercase">7. Análise de Riscos & SWOT</h2>
+                        <p class="text-[11px] text-slate-500 mb-4 pl-4">Eixos: Interno × Externo · Positivo × Negativo. Positivos derivam das conformidades; negativos, dos riscos GUT ≥ ${LIMIAR_SWOT}.</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
+                                <p class="text-[10px] font-bold text-emerald-600 uppercase mb-2">Forças (Internas)</p>
+                                <ul class="text-[10px] space-y-1">
+                                    ${strengths.length ? strengths.map(s => `<li>• ${s.text}</li>`).join('') : '<li class="text-slate-400 italic">Nenhuma força interna identificada no diagnóstico.</li>'}
+                                </ul>
+                            </div>
+                            <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100">
+                                <p class="text-[10px] font-bold text-blue-600 uppercase mb-2">Oportunidades (Externas)</p>
+                                <ul class="text-[10px] space-y-1">
+                                    ${opportunities.length ? opportunities.map(o => `<li>• ${o.text}</li>`).join('') : '<li class="text-slate-400 italic">Nenhuma oportunidade externa em conformidade identificada.</li>'}
+                                </ul>
+                            </div>
+                            <div class="bg-red-50 p-4 rounded-2xl border border-red-100">
+                                <p class="text-[10px] font-bold text-red-600 uppercase mb-2">Fraquezas (Internas)</p>
+                                <ul class="text-[10px] space-y-1">
+                                    ${weaknesses.length ? weaknesses.map(w => `<li>• ${w.text}</li>`).join('') : '<li class="text-slate-400 italic">Nenhuma fraqueza interna acima do limiar.</li>'}
+                                </ul>
+                            </div>
+                            <div class="bg-orange-50 p-4 rounded-2xl border border-orange-100">
+                                <p class="text-[10px] font-bold text-orange-600 uppercase mb-2">Ameaças (Externas)</p>
+                                <ul class="text-[10px] space-y-1">
+                                    ${threats.length ? threats.map(t => `<li>• ${t.text}</li>`).join('') : '<li class="text-slate-400 italic">Nenhuma ameaça externa acima do limiar.</li>'}
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2 class="text-xl font-black border-l-4 border-blue-600 pl-4 mb-6 uppercase">9. Confronto Orçamentário</h2>
+                        <div class="bg-slate-900 text-white p-6 rounded-3xl shadow-xl">
+                            <p class="text-xs opacity-60 uppercase mb-4">Análise Financeira de TI</p>
+                            <div class="space-y-4">
+                                <div class="flex justify-between border-b border-slate-700 pb-2">
+                                    <span class="text-sm">Budget Atual</span>
+                                    <span class="font-bold">R$ ${data.budget.toLocaleString()}</span>
+                                </div>
+                                <div class="flex justify-between border-b border-slate-700 pb-2">
+                                    <span class="text-sm">Budget Sugerido (${marketBench}%)</span>
+                                    <span class="font-bold text-blue-400">R$ ${(data.turnover * (marketBench/100)).toLocaleString()}</span>
+                                </div>
+                                <p class="text-[11px] leading-relaxed opacity-80 mt-4">
+                                    Considerando o custo de parada de <strong>R$ ${data.downtime.toLocaleString()}/hora</strong>, o investimento preventivo sugerido em segurança e infraestrutura possui um ROI de proteção contra desastres técnicos superior a 400%.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="border-t-2 border-slate-100 pt-8 flex justify-between text-[10px] text-slate-400 font-bold uppercase">
+                    <span>Maturidade Corecheck GRC Framework</span>
+                    <span>Emitido em: ${ev.date}</span>
+                    <span>ID: ${ev.id}</span>
+                </div>
+            `;
+
+            document.getElementById('report-output').innerHTML = html;
+            state.evaluations.push(ev);
+            localStorage.setItem('mc_saas_evals', JSON.stringify(state.evaluations));
+            navigate('report');
+            renderHistory();
         }
 
-        function viewSavedEvaluation(index) {
-            const list = loadEvaluationsFromStorage();
-            const it = list[index];
-            if (!it) return alert('Avaliação não encontrada.');
-            // Load into activeEval and render report without re-saving
-            activeEval = { scope: it.scope, answers: it.answers, date: it.date, company: it.company };
-            window._skipSaveOnGenerate = true;
+        function renderHistory() {
+            const list = document.getElementById('history-list');
+            list.innerHTML = state.evaluations.map(ev => `
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md transition">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <p class="text-[10px] font-bold text-blue-600 uppercase">${ev.companyData.sector}</p>
+                            <h4 class="text-lg font-bold text-slate-900">${ev.companyData.name}</h4>
+                        </div>
+                        <span class="text-[10px] bg-slate-100 px-2 py-1 rounded font-bold">${ev.date.split(',')[0]}</span>
+                    </div>
+                    <button onclick="viewOldReport(${ev.id})" class="w-full py-2 bg-slate-50 hover:bg-slate-900 hover:text-white rounded-xl text-xs font-bold transition">Ver Relatório Completo</button>
+                </div>
+            `).reverse().join('') || '<p class="col-span-full text-center text-slate-400 py-10">Nenhuma auditoria realizada ainda.</p>';
+        }
+
+        function viewOldReport(id) {
+            state.activeEval = state.evaluations.find(e => e.id === id);
             generateReport();
-            window._skipSaveOnGenerate = false;
         }
 
-        function deleteSavedEvaluation(index) {
-            const list = loadEvaluationsFromStorage();
-            list.splice(index, 1);
-            saveEvaluationsToStorage(list);
-            renderEvaluationsList();
-        }
-
-        function exportEvaluations() {
-            const list = loadEvaluationsFromStorage();
-            const blob = new Blob([JSON.stringify(list, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `maturity_evaluations_${new Date().toISOString()}.json`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            URL.revokeObjectURL(url);
-        }
-
-        function clearEvaluations() {
-            if (!confirm('Limpar todo o histórico de avaliações?')) return;
-            localStorage.removeItem('maturity_evaluations');
-            db.evaluations = [];
-            renderEvaluationsList();
+        // --- INIT ---
+        function login() { 
+            const u = document.getElementById('login-user').value;
+            if(u) { state.user = u; document.getElementById('main-nav').classList.remove('hidden'); navigate('dashboard'); renderHistory(); }
         }
     </script>
 </body>
