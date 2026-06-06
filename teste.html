@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maturity Corecheck - SaaS Enterprise GRC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        .view { display: none; }
+        .view.active { display: block; }
+        @media print {
+            .print-hidden { display: none !important; }
+            body { background-color: white; }
+            .report-card { box-shadow: none !important; border: 1px solid #e2e8f0 !important; }
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased h-screen flex flex-col overflow-hidden">
+
+    <!-- NAVIGATION BAR -->
+    <nav id="main-nav" class="bg-slate-900 text-white shadow-xl hidden flex-shrink-0 print-hidden">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-blue-600 p-1.5 rounded-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                    </div>
+                    <span class="font-bold text-xl tracking-tighter">MATURITY <span class="text-blue-400">CORECHECK</span></span>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <button onclick="navigate('dashboard')" class="text-sm font-medium hover:text-blue-400 transition">Dashboard</button>
+                    <button onclick="logout()" class="bg-slate-800 hover:bg-red-900 px-4 py-2 rounded-lg text-sm transition">Sair</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+        <div class="max-w-6xl mx-auto">
+
+            <!-- VISTA: LOGIN -->
+            <div id="view-login" class="view active max-w-md mx-auto mt-20">
+                <div class="bg-white p-8 rounded-3xl shadow-2xl border border-slate-200">
+                    <div class="text-center mb-8">
+                        <h1 class="text-3xl font-black text-slate-900">Portal GRC</h1>
+                        <p class="text-slate-500 mt-2">Plataforma de Governança Multiempresa</p>
+                    </div>
+                    <div class="space-y-4">
+                        <input type="text" id="login-user" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Usuário">
+                        <input type="password" id="login-pass" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Senha">
+                        <button onclick="login()" class="w-full bg-slate-900 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition transform hover:scale-[1.01]">Entrar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VISTA: DASHBOARD -->
+            <div id="view-dashboard" class="view">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Dashboard de Auditorias</h2>
+                    <button onclick="navigate('setup')" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold shadow-lg transition">Novo Diagnóstico</button>
+                </div>
+                <div id="history-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Cards de histórico injetados via JS -->
+                </div>
+            </div>
+
+            <!-- VISTA: SETUP DA EMPRESA -->
+            <div id="view-setup" class="view max-w-2xl mx-auto">
+                <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
+                    <h2 class="text-2xl font-bold mb-6">Parametrização da Empresa</h2>
+                    <div class="space-y-5">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="col-span-2">
+                                <label class="text-xs font-bold text-slate-500 uppercase ml-1">Nome da Organização</label>
+                                <input type="text" id="setup-name" class="w-full px-4 py-3 bg-slate-50 border rounded-xl" placeholder="Ex: Grupo Industrial Alpha">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 uppercase ml-1">Setor de Atuação</label>
+                                <select id="setup-sector" class="w-full px-4 py-3 bg-slate-50 border rounded-xl">
+                                    <option value="Saúde">Saúde</option>
+                                    <option value="Finanças">Finanças</option>
+                                    <option value="Indústria">Indústria</option>
+                                    <option value="Varejo">Varejo / E-commerce</option>
+                                    <option value="Tecnologia">Tecnologia / SaaS</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 uppercase ml-1">Faturamento Anual (R$)</label>
+                                <input type="number" id="setup-turnover" class="w-full px-4 py-3 bg-slate-50 border rounded-xl" placeholder="10000000">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 uppercase ml-1">Orçamento de TI (R$)</label>
+                                <input type="number" id="setup-budget" class="w-full px-4 py-3 bg-slate-50 border rounded-xl" placeholder="500000">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 uppercase ml-1">Custo Parada / Hora (R$)</label>
+                                <input type="number" id="setup-downtime" class="w-full px-4 py-3 bg-slate-50 border rounded-xl" placeholder="25000">
+                            </div>
+                        </div>
+                        <button onclick="startAudit()" class="w-full bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg mt-4">Iniciar Diagnóstico Estratégico</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VISTA: DIAGNÓSTICO (QUIZ) -->
+            <div id="view-quiz" class="view max-w-3xl mx-auto">
+                <div class="bg-white p-8 rounded-3xl shadow-2xl border border-slate-100">
+                    <div class="flex justify-between items-center mb-8">
+                        <span id="quiz-pillar" class="bg-blue-100 text-blue-700 text-xs px-3 py-1 rounded-full font-bold uppercase tracking-widest">Infraestrutura</span>
+                        <div class="text-right">
+                            <p id="quiz-progress-text" class="text-xs font-black text-slate-400 uppercase">Questão 1/20</p>
+                            <div class="w-32 bg-slate-100 h-2 rounded-full mt-1 overflow-hidden">
+                                <div id="quiz-progress-bar" class="bg-blue-600 h-full transition-all duration-500" style="width: 5%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <h3 id="quiz-question" class="text-2xl font-bold text-slate-800 mb-10 leading-tight">Pergunta do diagnóstico...</h3>
+                    <div class="grid grid-cols-1 gap-4 mb-10">
+                        <button onclick="saveAnswer(1)" class="flex items-center justify-between px-6 py-4 border-2 border-slate-100 rounded-2xl hover:border-emerald-500 hover:bg-emerald-50 transition group">
+                            <span class="font-bold text-slate-700 group-hover:text-emerald-700">Sim / Em Conformidade</span>
+                            <div class="w-6 h-6 border-2 rounded-full flex items-center justify-center group-hover:border-emerald-500">
+                                <div class="w-3 h-3 bg-emerald-500 rounded-full scale-0 group-hover:scale-100 transition"></div>
+                            </div>
+                        </button>
+                        <button onclick="saveAnswer(0)" class="flex items-center justify-between px-6 py-4 border-2 border-slate-100 rounded-2xl hover:border-red-500 hover:bg-red-50 transition group">
+                            <span class="font-bold text-slate-700 group-hover:text-red-700">Não / Em Desconformidade</span>
+                            <div class="w-6 h-6 border-2 rounded-full flex items-center justify-center group-hover:border-red-500">
+                                <div class="w-3 h-3 bg-red-500 rounded-full scale-0 group-hover:scale-100 transition"></div>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="flex justify-between">
+                        <button onclick="quizPrev()" id="btn-prev" class="text-slate-400 font-bold hover:text-slate-800 transition">← Anterior</button>
+                        <span class="text-slate-300">|</span>
+                        <button onclick="quizNext()" id="btn-next" class="text-slate-400 font-bold hover:text-blue-600 transition">Pular Questão →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VISTA: RELATÓRIO FINAL -->
+            <div id="view-report" class="view">
+                <div class="flex justify-between items-center mb-6 print-hidden">
+                    <button onclick="navigate('dashboard')" class="text-slate-600 font-bold">← Voltar</button>
+                    <button onclick="window.print()" class="bg-slate-900 text-white px-6 py-2 rounded-xl font-bold shadow-lg">Imprimir PDTI (PDF)</button>
+                </div>
+                <div id="report-output" class="bg-white p-12 rounded-none md:rounded-[3rem] shadow-2xl border border-slate-100 min-h-screen">
+                    <!-- Conteúdo gerado dinamicamente -->
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // --- MOTOR DE DADOS E LOGICA ---
+        const QUESTIONS = [
+            { id: 1, pillar: 'Infraestrutura', text: 'Possui redundância de conectividade e hardware para serviços críticos?', gut: [5, 4, 4], origin: 'Interno' },
+            { id: 2, pillar: 'Infraestrutura', text: 'Os backups são realizados em nuvem ou off-site com testes periódicos de restore?', gut: [5, 5, 5], origin: 'Interno' },
+            { id: 3, pillar: 'Infraestrutura', text: 'A sala de servidores/data center possui controle de acesso e climatização redundante?', gut: [4, 3, 4], origin: 'Interno' },
+            { id: 4, pillar: 'Infraestrutura', text: 'Utiliza ferramentas de monitoramento proativo (NMS) com alertas de downtime?', gut: [3, 4, 3], origin: 'Interno' },
+            { id: 5, pillar: 'Infraestrutura', text: 'Possui um plano de Disaster Recovery (DRP) testado nos últimos 12 meses?', gut: [5, 4, 5], origin: 'Interno' },
+            
+            { id: 6, pillar: 'Segurança', text: 'Utiliza Múltiplo Fator de Autenticação (MFA) para acessos administrativos?', gut: [5, 5, 4], origin: 'Externo' },
+            { id: 7, pillar: 'Segurança', text: 'Há uma política formal de gestão de senhas e bloqueio de contas inativas?', gut: [4, 4, 4], origin: 'Interno' },
+            { id: 8, pillar: 'Segurança', text: 'Possui licenciamento oficial e atualizado para todos os softwares core?', gut: [5, 3, 5], origin: 'Externo' },
+            { id: 9, pillar: 'Segurança', text: 'Realiza auditorias de permissões e perfis de acesso trimestralmente?', gut: [4, 4, 3], origin: 'Interno' },
+            { id: 10, pillar: 'Segurança', text: 'Utiliza criptografia para dados sensíveis em repouso e em trânsito?', gut: [5, 4, 5], origin: 'Externo' },
+
+            { id: 11, pillar: 'Processos', text: 'Utiliza ferramenta formal de ITSM/Chamados para gestão de demandas?', gut: [3, 4, 4], origin: 'Interno' },
+            { id: 12, pillar: 'Processos', text: 'Existe um catálogo de serviços com SLAs definidos com as áreas de negócio?', gut: [3, 3, 3], origin: 'Interno' },
+            { id: 13, pillar: 'Processos', text: 'Há processos formais de Gestão de Mudanças para evitar impactos em produção?', gut: [4, 4, 4], origin: 'Interno' },
+            { id: 14, pillar: 'Processos', text: 'Realiza reuniões mensais de indicadores (KPIs) com a alta gestão?', gut: [3, 3, 4], origin: 'Interno' },
+            { id: 15, pillar: 'Processos', text: 'Possui fluxos de aprovação automatizados para requisições de TI?', gut: [2, 3, 3], origin: 'Interno' },
+
+            { id: 16, pillar: 'Compliance', text: 'Possui inventário de dados pessoais (RoPA) em conformidade com a LGPD?', gut: [5, 5, 5], origin: 'Externo' },
+            { id: 17, pillar: 'Compliance', text: 'Há um DPO (Encarregado de Dados) nomeado e atuante na organização?', gut: [4, 4, 5], origin: 'Externo' },
+            { id: 18, pillar: 'Compliance', text: 'Possui logs de auditoria imutáveis para transações financeiras/críticas?', gut: [5, 4, 4], origin: 'Externo' },
+            { id: 19, pillar: 'Compliance', text: 'Realiza gestão de riscos de fornecedores de TI (Vendor Risk Management)?', gut: [4, 3, 4], origin: 'Externo' },
+            { id: 20, pillar: 'Compliance', text: 'A TI possui assento ou reporte direto ao Conselho/Diretoria Executiva?', gut: [4, 3, 5], origin: 'Interno' }
+        ];
+
+        let state = {
+            user: null,
+            evaluations: JSON.parse(localStorage.getItem('mc_saas_evals') || '[]'),
+            activeEval: null,
+            currentIdx: 0
+        };
+
+        // --- AUTH & NAVIGATION ---
+        function login() {
+            const user = document.getElementById('login-user').value;
+            if(user) {
+                state.user = user;
+                document.getElementById('main-nav').classList.remove('hidden');
+                navigate('dashboard');
+                renderHistory();
+            }
+        }
+
+        function logout() { location.reload(); }
+
+        function navigate(view) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById('view-' + view).classList.add('active');
+        }
+
+        // --- AUDIT FLOW ---
+        function startAudit() {
+            const companyData = {
+                name: document.getElementById('setup-name').value || 'Empresa Genérica',
+                sector: document.getElementById('setup-sector').value,
+                turnover: parseFloat(document.getElementById('setup-turnover').value) || 0,
+                budget: parseFloat(document.getElementById('setup-budget').value) || 0,
+                downtime: parseFloat(document.getElementById('setup-downtime').value) || 0
+            };
+
+            state.activeEval = {
+                id: Date.now(),
+                companyData,
+                answers: {},
+                date: new Date().toLocaleString()
+            };
+            state.currentIdx = 0;
+            navigate('quiz');
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const q = QUESTIONS[state.currentIdx];
+            const progress = ((state.currentIdx + 1) / QUESTIONS.length) * 100;
+            
+            document.getElementById('quiz-pillar').textContent = q.pillar;
+            document.getElementById('quiz-question').textContent = q.text;
+            document.getElementById('quiz-progress-text').textContent = `Questão ${state.currentIdx + 1}/${QUESTIONS.length}`;
+            document.getElementById('quiz-progress-bar').style.width = `${progress}%`;
+            document.getElementById('btn-prev').style.opacity = state.currentIdx === 0 ? 0 : 1;
+        }
+
+        function saveAnswer(val) {
+            state.activeEval.answers[QUESTIONS[state.currentIdx].id] = val;
+            if(state.currentIdx < QUESTIONS.length - 1) {
+                state.currentIdx++;
+                renderQuestion();
+            } else {
+                generateReport();
+            }
+        }
+
+        function quizPrev() { if(state.currentIdx > 0) { state.currentIdx--; renderQuestion(); } }
+        function quizNext() { if(state.currentIdx < QUESTIONS.length - 1) { state.currentIdx++; renderQuestion(); } }
+
+        // --- REPORT ENGINE (MATEMATICA & GRC) ---
+        function generateReport() {
+            const ev = state.activeEval;
+            const data = ev.companyData;
+            const answers = ev.answers;
+
+            // 1. Calculo de Scores por Dimensão
+            const pillars = ['Infraestrutura', 'Segurança', 'Processos', 'Compliance'];
+            const scores = {};
+            pillars.forEach(p => {
+                const pQs = QUESTIONS.filter(q => q.pillar === p);
+                const conform = pQs.filter(q => answers[q.id] === 1).length;
+                scores[p] = (conform / pQs.length) * 100;
+            });
+
+            // 2. Matriz GUT e Riscos
+            const failures = QUESTIONS.filter(q => answers[q.id] === 0);
+            const gutList = failures.map(q => ({
+                text: q.text,
+                pillar: q.pillar,
+                g: q.gut[0], u: q.gut[1], t: q.gut[2],
+                score: q.gut[0] * q.gut[1] * q.gut[2],
+                origin: q.origin
+            })).sort((a, b) => b.score - a.score);
+
+            // Classificacao de severidade GUT (Score = G x U x T, faixa 1 a 125)
+            const gutClass = (s) => s >= 100 ? 'Crítico' : (s >= 60 ? 'Alto' : (s >= 30 ? 'Médio' : 'Baixo'));
+            const LIMIAR_SWOT = 60; // riscos com Score >= 60 (Alto/Crítico) alimentam a SWOT
+
+            const highRisks = gutList.filter(r => r.score >= LIMIAR_SWOT);
+
+            // SWOT completa e rastreavel: 2x2 (Interno/Externo) x (Positivo/Negativo)
+            // Positivos derivam das questoes em conformidade (resposta = Sim)
+            const conforming = QUESTIONS.filter(q => answers[q.id] === 1).map(q => ({ text: q.text, origin: q.origin }));
+            const strengths = conforming.filter(r => r.origin === 'Interno');   // Forças (Interno +)
+            const opportunities = conforming.filter(r => r.origin === 'Externo'); // Oportunidades (Externo +)
+            const weaknesses = highRisks.filter(r => r.origin === 'Interno');     // Fraquezas (Interno -)
+            const threats = highRisks.filter(r => r.origin === 'Externo');        // Ameaças (Externo -)
+
+            // 3. Calculo Orçamentário (ROI/Benchmark)
+            const budgetPercent = (data.budget / data.turnover) * 100;
+            const marketBench = data.sector === 'Finanças' ? 7 : (data.sector === 'Saúde' ? 5 : 3);
+            const budgetStatus = budgetPercent < marketBench ? 'Abaixo do mercado' : 'Alinhado ao mercado';
+
+            let html = `
+                <div class="border-b-8 border-slate-900 pb-8 mb-12 flex justify-between items-end">
+                    <div>
+                        <h1 class="text-4xl font-black text-slate-900 tracking-tighter uppercase">Plano Diretor de TI (PDTI)</h1>
+                        <p class="text-blue-600 font-bold text-xl">${data.name} | <span class="text-slate-400 font-medium">${data.sector}</span></p>
+                    </div>
+                    <div class="text-right">
+                        <div class="bg-slate-900 text-white p-4 rounded-2xl">
+                            <p class="text-[10px] font-bold uppercase opacity-60">Maturidade Global</p>
+                            <p class="text-4xl font-black">${(Object.values(scores).reduce((a,b)=>a+b,0)/4/20).toFixed(1)} <span class="text-sm opacity-40">/ 5.0</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+                    <section>
+                        <h2 class="text-xl font-black border-l-4 border-blue-600 pl-4 mb-3 uppercase">1. Diagnóstico Situacional</h2>
+                        <p class="text-[11px] text-slate-500 mb-4">Score por dimensão = (questões em conformidade ÷ total de questões da dimensão) × 100. Maturidade global = média dos quatro pilares, convertida para escala 0–5,0.</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            ${Object.entries(scores).map(([p, s]) => `
+                                <div class="bg-slate-50 p-4 rounded-2xl border">
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase">${p}</p>
+                                    <p class="text-2xl font-black ${s < 40 ? 'text-red-600' : 'text-slate-800'}">${s.toFixed(0)}%</p>
+                                    <div class="w-full bg-slate-200 h-1 rounded-full mt-2"><div class="bg-blue-600 h-full" style="width:${s}%"></div></div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <p class="mt-6 text-slate-600 text-sm leading-relaxed">
+                            A organização opera com um nível de investimento em TI de <strong>${budgetPercent.toFixed(1)}%</strong> do faturamento, o que é classificado como <strong>${budgetStatus}</strong> para o setor de ${data.sector}.
+                            A maior vulnerabilidade detectada encontra-se no pilar de <strong>${Object.entries(scores).sort((a,b)=>a[1]-b[1])[0][0]}</strong>.
+                        </p>
+                    </section>
+
+                    <section>
+                        <h2 class="text-xl font-black border-l-4 border-blue-600 pl-4 mb-6 uppercase">2. Inventário e Ativos Críticos</h2>
+                        <table class="w-full text-left text-sm">
+                            <thead class="border-b-2 border-slate-900">
+                                <tr><th class="py-2">Dimensão</th><th>Estado</th><th>Impacto Financeiro</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="py-2 font-bold">Operações</td><td>${scores['Infraestrutura'] > 50 ? 'Estável' : 'Crítico'}</td><td>R$ ${data.downtime.toLocaleString()}/hora</td></tr>
+                                <tr><td class="py-2 font-bold">Dados</td><td>${scores['Segurança'] > 50 ? 'Protegido' : 'Vulnerável'}</td><td>Risco Reputacional</td></tr>
+                                <tr><td class="py-2 font-bold">Processos</td><td>${scores['Processos'] > 50 ? 'Ágil' : 'Manual'}</td><td>Perda de Produtividade</td></tr>
+                            </tbody>
+                        </table>
+                    </section>
+                </div>
+
+                <div class="mb-16">
+                    <h2 class="text-xl font-black border-l-4 border-blue-600 pl-4 mb-3 uppercase">5. Priorização de Demandas (Matriz GUT)</h2>
+                    <p class="text-xs text-slate-500 mb-2 pl-4">
+                        <strong>Score = G × U × T</strong> (Gravidade × Urgência × Tendência) — faixa de 1 a 125.
+                        Classificação: <span class="font-bold">Baixo</span> &lt; 30 · <span class="font-bold">Médio</span> 30–59 · <span class="font-bold text-orange-600">Alto</span> 60–99 · <span class="font-bold text-red-600">Crítico</span> ≥ 100.
+                        Riscos com Score ≥ ${LIMIAR_SWOT} (Alto/Crítico) são promovidos automaticamente à matriz SWOT.
+                    </p>
+                    <p class="text-[11px] text-slate-400 mb-6 pl-4">${gutList.length} vulnerabilidade(s) identificada(s) · ${highRisks.length} acima do limiar de severidade.</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-900 text-white text-[10px] uppercase">
+                                <tr><th class="p-4">Vulnerabilidade Identificada</th><th class="p-4 text-center">Origem</th><th class="p-4 text-center">G</th><th class="p-4 text-center">U</th><th class="p-4 text-center">T</th><th class="p-4 text-center">Score</th><th class="p-4 text-center">Classificação</th></tr>
+                            </thead>
+                            <tbody class="divide-y text-sm">
+                                ${gutList.map(it => `
+                                    <tr>
+                                        <td class="p-4 font-medium">${it.text}</td>
+                                        <td class="p-4 text-center text-[11px] text-slate-500">${it.origin}</td>
+                                        <td class="p-4 text-center">${it.g}</td>
+                                        <td class="p-4 text-center">${it.u}</td>
+                                        <td class="p-4 text-center">${it.t}</td>
+                                        <td class="p-4 text-center font-black ${it.score >= 100 ? 'text-red-600' : (it.score >= 60 ? 'text-orange-600' : '')}">${it.score}</td>
+                                        <td class="p-4 text-center text-[11px] font-bold ${it.score >= 100 ? 'text-red-600' : (it.score >= 60 ? 'text-orange-600' : 'text-slate-500')}">${gutClass(it.score)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+                    <section>
+                        <h2 class="text-xl font-black border-l-4 border-blue-600 pl-4 mb-3 uppercase">7. Análise de Riscos & SWOT</h2>
+                        <p class="text-[11px] text-slate-500 mb-4 pl-4">Eixos: Interno × Externo · Positivo × Negativo. Positivos derivam das conformidades; negativos, dos riscos GUT ≥ ${LIMIAR_SWOT}.</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
+                                <p class="text-[10px] font-bold text-emerald-600 uppercase mb-2">Forças (Internas)</p>
+                                <ul class="text-[10px] space-y-1">
+                                    ${strengths.length ? strengths.map(s => `<li>• ${s.text}</li>`).join('') : '<li class="text-slate-400 italic">Nenhuma força interna identificada no diagnóstico.</li>'}
+                                </ul>
+                            </div>
+                            <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100">
+                                <p class="text-[10px] font-bold text-blue-600 uppercase mb-2">Oportunidades (Externas)</p>
+                                <ul class="text-[10px] space-y-1">
+                                    ${opportunities.length ? opportunities.map(o => `<li>• ${o.text}</li>`).join('') : '<li class="text-slate-400 italic">Nenhuma oportunidade externa em conformidade identificada.</li>'}
+                                </ul>
+                            </div>
+                            <div class="bg-red-50 p-4 rounded-2xl border border-red-100">
+                                <p class="text-[10px] font-bold text-red-600 uppercase mb-2">Fraquezas (Internas)</p>
+                                <ul class="text-[10px] space-y-1">
+                                    ${weaknesses.length ? weaknesses.map(w => `<li>• ${w.text}</li>`).join('') : '<li class="text-slate-400 italic">Nenhuma fraqueza interna acima do limiar.</li>'}
+                                </ul>
+                            </div>
+                            <div class="bg-orange-50 p-4 rounded-2xl border border-orange-100">
+                                <p class="text-[10px] font-bold text-orange-600 uppercase mb-2">Ameaças (Externas)</p>
+                                <ul class="text-[10px] space-y-1">
+                                    ${threats.length ? threats.map(t => `<li>• ${t.text}</li>`).join('') : '<li class="text-slate-400 italic">Nenhuma ameaça externa acima do limiar.</li>'}
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2 class="text-xl font-black border-l-4 border-blue-600 pl-4 mb-6 uppercase">9. Confronto Orçamentário</h2>
+                        <div class="bg-slate-900 text-white p-6 rounded-3xl shadow-xl">
+                            <p class="text-xs opacity-60 uppercase mb-4">Análise Financeira de TI</p>
+                            <div class="space-y-4">
+                                <div class="flex justify-between border-b border-slate-700 pb-2">
+                                    <span class="text-sm">Budget Atual</span>
+                                    <span class="font-bold">R$ ${data.budget.toLocaleString()}</span>
+                                </div>
+                                <div class="flex justify-between border-b border-slate-700 pb-2">
+                                    <span class="text-sm">Budget Sugerido (${marketBench}%)</span>
+                                    <span class="font-bold text-blue-400">R$ ${(data.turnover * (marketBench/100)).toLocaleString()}</span>
+                                </div>
+                                <p class="text-[11px] leading-relaxed opacity-80 mt-4">
+                                    Considerando o custo de parada de <strong>R$ ${data.downtime.toLocaleString()}/hora</strong>, o investimento preventivo sugerido em segurança e infraestrutura possui um ROI de proteção contra desastres técnicos superior a 400%.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="border-t-2 border-slate-100 pt-8 flex justify-between text-[10px] text-slate-400 font-bold uppercase">
+                    <span>Maturidade Corecheck GRC Framework</span>
+                    <span>Emitido em: ${ev.date}</span>
+                    <span>ID: ${ev.id}</span>
+                </div>
+            `;
+
+            document.getElementById('report-output').innerHTML = html;
+            state.evaluations.push(ev);
+            localStorage.setItem('mc_saas_evals', JSON.stringify(state.evaluations));
+            navigate('report');
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('history-list');
+            list.innerHTML = state.evaluations.map(ev => `
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md transition">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <p class="text-[10px] font-bold text-blue-600 uppercase">${ev.companyData.sector}</p>
+                            <h4 class="text-lg font-bold text-slate-900">${ev.companyData.name}</h4>
+                        </div>
+                        <span class="text-[10px] bg-slate-100 px-2 py-1 rounded font-bold">${ev.date.split(',')[0]}</span>
+                    </div>
+                    <button onclick="viewOldReport(${ev.id})" class="w-full py-2 bg-slate-50 hover:bg-slate-900 hover:text-white rounded-xl text-xs font-bold transition">Ver Relatório Completo</button>
+                </div>
+            `).reverse().join('') || '<p class="col-span-full text-center text-slate-400 py-10">Nenhuma auditoria realizada ainda.</p>';
+        }
+
+        function viewOldReport(id) {
+            state.activeEval = state.evaluations.find(e => e.id === id);
+            generateReport();
+        }
+
+        // --- INIT ---
+        function login() { 
+            const u = document.getElementById('login-user').value;
+            if(u) { state.user = u; document.getElementById('main-nav').classList.remove('hidden'); navigate('dashboard'); renderHistory(); }
+        }
+    </script>
+</body>
+</html>
